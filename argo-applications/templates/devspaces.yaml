@@ -15,8 +15,6 @@ spec:
     repoURL: {{ .Values.gitRepo.URL }}
     targetRevision: {{ .Values.gitRepo.targetRevision }}
     path: operators/devspaces
-    # directory:
-    #   include: instance.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: openshift-devspaces
