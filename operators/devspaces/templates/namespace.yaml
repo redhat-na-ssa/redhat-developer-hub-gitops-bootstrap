@@ -1,0 +1,9 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: openshift-devspaces
+  labels:
+    kubernetes.io/metadata.name: openshift-devspaces
+spec:
+  finalizers:
+    - kubernetes

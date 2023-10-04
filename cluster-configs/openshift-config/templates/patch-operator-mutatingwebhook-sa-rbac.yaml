@@ -1,0 +1,50 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  name: mutatingwebhook-patcher
+  namespace: patch-operator
+  labels:
+    {{- include "openshift-config.labels" . | nindent 4 }}  
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    {{- include "openshift-config.labels" . | nindent 4 }}  
+  name: mutatingwebhookconfiguration-patcher
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - "admissionregistration.k8s.io"
+  resources:
+  - mutatingwebhookconfigurations
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    {{- include "openshift-config.labels" . | nindent 4 }}  
+  name: mutatingwebhookconfiguration-patcher
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: mutatingwebhookconfiguration-patcher
+subjects:
+- kind: ServiceAccount
+  name: mutatingwebhook-patcher
+  namespace: patch-operator

@@ -1,0 +1,54 @@
+apiVersion: org.eclipse.che/v2
+kind: CheCluster
+metadata:
+  name: devspaces
+  namespace: openshift-devspaces
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  devEnvironments:
+    startTimeoutSeconds: 600 #timeout for the Workspace creation
+    containerBuildConfiguration:
+      openShiftSecurityContextConstraint: container-build
+    defaultEditor: che-incubator/che-code/insiders
+    defaultNamespace:
+      template: <username>-devspaces
+    secondsOfInactivityBeforeIdling: -1
+    secondsOfRunBeforeIdling: -1
+    maxNumberOfWorkspacesPerUser: 5
+    maxNumberOfRunningWorkspacesPerUser: 5
+    storage:
+      pvcStrategy: per-workspace
+      perWorkspaceStrategyPvcConfig:
+        claimSize: 10Gi
+        storageClass: 'gp3-csi'
+  components:
+    pluginRegistry:
+      openVSXURL: 'https://open-vsx.org'
+    cheServer:
+      debug: false
+      logLevel: INFO
+    dashboard: {}
+    devWorkspace:
+      runningLimit: '5'
+    devfileRegistry: {}
+      # deployment:
+      #   containers:
+      #     - image: 'quay.io/rafaeltuelho/che-devfile-registry:test'
+      #       name: custom-devfile-registry
+    imagePuller:
+      enable: true
+      # cachingCPULimit: 250m
+      # cachingMemoryLimit: 100Mi
+      # spec:
+      #   images: >-
+      #     universal-developer-image-ubi8-latest=quay.io/redhat_na_ssa/universal-developer-image:ubi8-latest
+    metrics:
+      enable: true
+  containerRegistry: {}
+  networking:
+    auth:
+      gateway:
+        configLabels:
+          app: che
+          component: che-gateway-config

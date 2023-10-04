@@ -1,0 +1,6 @@
+gitRepo: 
+  URL: dummy
+  targetRevision: HEAD
+baseDomain: dummy
+git:
+  organization: dummy

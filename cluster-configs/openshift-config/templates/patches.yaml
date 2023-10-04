@@ -1,0 +1,128 @@
+# Documentation reference: https://github.com/redhat-cop/patch-operator
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: Patch
+metadata:
+  name: config-patches
+  namespace: openshift-config
+  labels:
+    {{- include "openshift-config.labels" . | nindent 4 }}  
+spec:
+  serviceAccountRef:
+    name: default
+  patches:
+    # pull-secret-service-account-patch:
+    #   targetObjectRef:
+    #     apiVersion: v1
+    #     kind: ServiceAccount
+    #     name: default 
+    #   sourceObjectRefs:
+    #   - apiVersion: v1
+    #     kind: Namespace
+    #     name: '{{ "{{" }} .metadata.namespace {{ "}}" }}'   
+    #   patchTemplate: |
+    #     imagePullSecrets:
+    #     {{ "{{-" }} if and (and (hasKey (index . 1).metadata.labels "app") (not (eq ((index . 1).metadata.labels.environment | toString) "build"))) (not (has (dict "name" "quay-pull-secret") (index . 0).imagePullSecrets)) {{ "}}" }}      
+    #     {{ "{{" }} append (index . 0).imagePullSecrets (dict "name" "quay-pull-secret") | toYaml | indent 2 {{ "}}" }}
+    #     {{ "{{-" }} else {{ "}}" }}
+    #     {{ "{{" }} (index . 0).imagePullSecrets | toYaml | indent 2 {{ "}}" }}
+    #     {{ "{{-" }} end {{ "}}" }}
+    #   patchType: application/merge-patch+json  
+    # push-secret-pipeline-service-account-patch:
+    #   targetObjectRef:
+    #     apiVersion: v1
+    #     kind: ServiceAccount
+    #     name: pipeline
+    #   sourceObjectRefs:
+    #   - apiVersion: v1
+    #     kind: Namespace
+    #     name: '{{ "{{" }} .metadata.namespace {{ "}}" }}'   
+    #   patchTemplate: |
+    #     imagePullSecrets:
+    #     {{ "{{-" }} if and (and (hasKey (index . 1).metadata.labels "app") (eq ((index . 1).metadata.labels.environment | toString) "build")) (not (has (dict "name" "quay-push-secret") (index . 0).imagePullSecrets)) {{ "}}" }}      
+    #     {{ "{{" }} append (index . 0).imagePullSecrets (dict "name" "quay-push-secret") | toYaml | indent 2 {{ "}}" }}
+    #     {{ "{{-" }} else {{ "}}" }}
+    #     {{ "{{" }} (index . 0).imagePullSecrets | toYaml | indent 2 {{ "}}" }}
+    #     {{ "{{-" }} end {{ "}}" }}                
+    #   patchType: application/merge-patch+json     
+    github-ocp-oauth-provider:
+      targetObjectRef:
+        apiVersion: config.openshift.io/v1
+        kind: OAuth
+        name: cluster
+      # these are the objects that will be watched and become part of the parameters of the patch template.
+      sourceObjectRefs:
+      - apiVersion: v1
+        kind: Secret
+        name: ocp-github-app-credentials
+        namespace: openshift-config  
+      # This is the the template that will be evaluated. 
+      # The result must be a valid patch compatible with the requested type and expressed in yaml for readability. 
+      # The parameters passed to the template are the target object and then the all of the source object. 
+      # So if you want to refer to the target object in the template you can use this expression (index . 0). 
+      # Higher indexes refer to the sourceObjectRef array. 
+      # The template is expressed in golang template notation and supports the same functions as helm template.
+      # ---
+      # - Golang text template syntax: https://pkg.go.dev/text/template
+      # ---
+      patchTemplate: |
+        {{ "{{-" }} $demoIdp:= dict "name" "github" "mappingMethod" "claim" "type" "GitHub" "github" (dict "teams" (list) "clientID" ((index . 1).data.client_id | b64dec) "clientSecret" (dict "name" "ocp-github-app-credentials") "organizations" (list ((index . 1).data.orgs | b64dec)) ) {{ "-}}" }}
+        spec:
+          identityProviders:
+          {{ "{{-" }} if (not (has $demoIdp (index . 0).spec.identityProviders)) {{ "}}" }}
+        {{ "{{" }} append (index . 0).spec.identityProviders $demoIdp | toYaml | indent 4 {{ "}}" }}
+          {{ "{{-" }} else {{ "}}" }}
+        {{ "{{" }} (index . 0).spec.identityProviders | toYaml | indent 4 {{ "}}" }}
+          {{ "{{-" }} end {{ "}}" }}
+      # is the type of the json patch. The possible values are: 
+      #  application/json-patch+json, 
+      #  application/merge-patch+json and 
+      #  application/strategic-merge-patch+json. 
+      #If this annotation is omitted it defaults to strategic merge.
+      patchType: application/merge-patch+json
+    # argocd-admin-user-secret-for-tekton:
+    #   targetObjectRef:
+    #     apiVersion: v1
+    #     kind: Secret
+    #     name: argocd-env-secret
+    #   sourceObjectRefs:
+    #   - apiVersion: v1
+    #     kind: Secret
+    #     namespace: '{{ "{{" }} .metadata.namespace {{ "}}" }}'
+    #     name: tenant-gitops-cluster
+    #   patchTemplate: | 
+    #     data:
+    #       ARGOCD_USERNAME: {{ "{{" }} "admin" | b64enc {{ "}}" }}
+    #       ARGOCD_PASSWORD: {{ "{{" }} (index (index . 1).data "admin.password") {{ "}}" }}
+    #   patchType: application/merge-patch+json         
+    # user-workload-grafana-app-patch:
+    #   targetObjectRef:
+    #     apiVersion: argoproj.io/v1alpha1
+    #     kind: Application
+    #     namespace: openshift-gitops
+    #     name: user-workload-grafana
+    #   sourceObjectRefs:
+    #   - apiVersion: v1
+    #     kind: Secret
+    #     namespace: openshift-config
+    #     name: default-service-account        
+    #   patchTemplate: |
+    #     spec:
+    #       source:
+    #         helm:
+    #           values: |
+    #             userworkload:
+    #               prometheus:
+    #                 bearertoken: {{ "{{" }} (index . 1).data.token | toString | b64dec {{ "}}" }}
+    #   patchType: application/merge-patch+json
+    patch-operator-mutatingwebhookconfigurations:
+      targetObjectRef:
+        apiVersion: admissionregistration.k8s.io/v1
+        kind: MutatingWebhookConfiguration
+        name: patch-operator-inject
+      patchTemplate: '[{"op": "replace", "path": "/webhooks/0/clientConfig/caBundle", "value":"{{ "{{" }} (index (index . 1).data "olmCAKey") {{ "}}" }}"}]'     
+      patchType: application/json-patch+json
+      sourceObjectRefs:
+      - apiVersion: v1
+        kind: Secret
+        name: patch-operator-controller-manager-service-cert
+        namespace: patch-operator
