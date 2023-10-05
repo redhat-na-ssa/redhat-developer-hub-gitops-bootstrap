@@ -46,7 +46,7 @@ spec:
         - name: gitlab.https
           value: "{{ .Values.gitlab.https }}"
         - name: gitlab.rootEmail
-          value: "{{ .Values.gitlab.root.email }}"
+          value: "{{ .Values.gitlab.rootEmail }}"
         - name: gitlab.keyBase.db
           value: "{{ .Values.gitlab.keybase.db }}"
         - name: gitlab.keyBase.otp
