@@ -18,11 +18,11 @@ spec:
     helm:
       parameters:
         - name: gitlab.email.address
-          value: "{{ .Values.gitlab.email_address }}"
+          value: "{{ .Values.gitlab.email.address }}"
         - name: gitlab.email.displayName
-          value: "{{ .Values.gitlab.email_display_name }}"
+          value: "{{ .Values.gitlab.email.displayName }}"
         - name: gitlab.email.replyTo
-          value: "{{ .Values.gitlab.email_reply_to }}"
+          value: "{{ .Values.gitlab.email.replyTo }}"
         - name: gitlab.smtp.enabled
           value: "{{ .Values.gitlab.smtp.enabled }}"
         - name: gitlab.smtp.domain
@@ -48,11 +48,11 @@ spec:
         - name: gitlab.rootEmail
           value: "{{ .Values.gitlab.rootEmail }}"
         - name: gitlab.keyBase.db
-          value: "{{ .Values.gitlab.keybase.db }}"
+          value: "{{ .Values.gitlab.keyBase.db }}"
         - name: gitlab.keyBase.otp
-          value: "{{ .Values.gitlab.keybase.otp }}"
+          value: "{{ .Values.gitlab.keyBase.otp }}"
         - name: gitlab.keyBase.secret
-          value: "{{ .Values.gitlab.keybase.secret }}"
+          value: "{{ .Values.gitlab.keyBase.secret }}"
         - name: gitlab.postgresql.dbUser
           value: {{ .Values.gitlab.db.dbUser }}
         - name: gitlab.postgresql.dbPassword
