@@ -19,13 +19,13 @@ spec:
       include: operator.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: patch-operator
+    namespace: openshift-operators
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-    - CreateNamespace=true
+    - CreateNamespace=false
     - RespectIgnoreDifferences=true
     - ApplyOutOfSyncOnly=true    
     retry:
