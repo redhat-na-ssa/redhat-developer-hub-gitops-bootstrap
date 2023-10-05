@@ -64,7 +64,7 @@ spec:
       # - Golang text template syntax: https://pkg.go.dev/text/template
       # ---
       patchTemplate: |
-        {{ "{{-" }} $clusterDomain:= {{ "-}}" }}
+        {{ "{{-" }} $clusterDomain:= (index . 1).spec.domain {{ "-}}" }}
         spec:
           chart:
             values:
