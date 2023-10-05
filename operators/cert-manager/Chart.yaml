@@ -1,5 +1,5 @@
 apiVersion: v2
-name: gitlab
-description: Deploys DevSpacesGitlab
+name: cert-manager
+description: Deploys cert-manager operator
 type: application
 version: 0.0.1

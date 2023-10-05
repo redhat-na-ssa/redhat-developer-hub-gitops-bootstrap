@@ -1,0 +1,14 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: gitlab-operator-kubernetes
+  namespace: gitlab-system
+  annotations:
+    "helm.sh/hook-weight": "-5"
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: gitlab-operator-kubernetes
+  source: community-operators
+  sourceNamespace: openshift-marketplace
+  # startingCSV: gitlab-operator-kubernetes.v0.19.0
