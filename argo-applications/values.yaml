@@ -20,15 +20,15 @@ gitlab:
   smtp:
     enabled: "false"
     domain: "example.com"
-    host: "smtp.gitlab-gitlab-ci.apps.cluster-tw2sn.tw2sn.sandbox1734.opentlc.com"
+    host: "smtp.gitlab-openshift-gitops.apps.cluster-tw2sn.tw2sn.sandbox1734.opentlc.com"
     port: "587"
     user: "gitlab"
     password: "gitlab"
   ssh:
-    host: "ssh.gitlab-gitlab-ci.apps.cluster-tw2sn.tw2sn.sandbox1734.opentlc.com"
+    host: "ssh.gitlab-openshift-gitops.apps.cluster-tw2sn.tw2sn.sandbox1734.opentlc.com"
     port: "22"
   rootPassword: openshift
-  host: gitlab-gitlab.apps.cluster.opentlc.com
+  host: "gitlab-openshift-gitops.apps.cluster-tw2sn.tw2sn.sandbox1734.opentlc.com"
   https: "true"
   rootEmail: "admin@example.com"
   keyBase:
