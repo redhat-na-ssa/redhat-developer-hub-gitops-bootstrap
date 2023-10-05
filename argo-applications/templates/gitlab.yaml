@@ -59,18 +59,18 @@ spec:
           value: {{ .Values.gitlab.db.dbPassword }}
         - name: gitlab.postgresql.dbName
           value: {{ .Values.gitlab.db.dbName }}
-{% for group in .Values.gitlab.import.repos -%}
-          {% set grouploop = loop %}
-        - name: gitlab.groups[{{ grouploop.index - 1 }}].name
-          value: {{ group.name }}
-{% for repo in group.repo %}
-        - name: gitlab.groups[{{ grouploop.index - 1 }}].repo[{{ loop.index - 1 }}].name
-          value: {{ repo.name }}
-        - name: gitlab.groups[{{ grouploop.index - 1 }}].repo[{{ loop.index - 1 }}].url
-          value: {{ repo.url }}
-{% endfor %}
-{% endfor %}
-{% if .Values.gitlab.user_create %}
+# {% for group in .Values.gitlab.import.repos -%}
+#           {% set grouploop = loop %}
+#         - name: gitlab.groups[{{ grouploop.index - 1 }}].name
+#           value: {{ group.name }}
+# {% for repo in group.repo %}
+#         - name: gitlab.groups[{{ grouploop.index - 1 }}].repo[{{ loop.index - 1 }}].name
+#           value: {{ repo.name }}
+#         - name: gitlab.groups[{{ grouploop.index - 1 }}].repo[{{ loop.index - 1 }}].url
+#           value: {{ repo.url }}
+# {% endfor %}
+# {% endfor %}
+# {% if .Values.gitlab.user_create %}
         - name: gitlab.user.name
           value: {{ .Values.gitlab.user.name }}
         - name: gitlab.user.username
@@ -79,7 +79,7 @@ spec:
           value: {{ .Values.gitlab.user.password }}
         - name: gitlab.user.email
           value: {{ .Values.gitlab.user.email }}
-{% endif %}
+# {% endif %}
   destination:
     server: https://kubernetes.default.svc
     namespace: openshift-gitops
