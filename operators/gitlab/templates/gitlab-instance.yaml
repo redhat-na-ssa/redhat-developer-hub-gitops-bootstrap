@@ -7,12 +7,12 @@ spec:
   chart:
     values:
       certmanager-issuer:
-        email: rafaelcba@gmail.com
+        email: {{ .Values.certmanager.issuer.email }}
       configureCertmanager:
         install: false
       global:
         hosts:
-          domain: {{ (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain }} #apps.cluster-tw2sn.tw2sn.sandbox1734.opentlc.com
+          domain: example.com # does't work on ArgoCD yet {{ (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain }}
         ingress:
           annotations:
             route.openshift.io/termination: edge
