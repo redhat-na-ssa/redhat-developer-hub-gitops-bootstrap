@@ -12,7 +12,7 @@ spec:
         install: false
       global:
         hosts:
-          domain: {{ (lookup "v1" "Ingress.config.openshift.io" "" "cluster").spec.domain }} #apps.cluster-tw2sn.tw2sn.sandbox1734.opentlc.com
+          domain: {{ (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain }} #apps.cluster-tw2sn.tw2sn.sandbox1734.opentlc.com
         ingress:
           annotations:
             route.openshift.io/termination: edge
