@@ -1,14 +1,3 @@
-gitRepo: 
-  URL: dummy
-  targetRevision: HEAD
-baseDomain: dummy
-git:
-  organization: redhat-na-ssa
-helm:
-  charts:
-    gitlab:
-      repoURL: https://github.com/redhat-gpte-devopsautomation/agnosticg
-      targetRevision: HEAD
 # -------------------------------------------------------------------
 # GitLab config
 # -------------------------------------------------------------------
@@ -28,7 +17,7 @@ gitlab:
     host: "ssh.gitlab-gitlab-ci.apps.cluster-tw2sn.tw2sn.sandbox1734.opentlc.com"
     port: "22"
   rootPassword: openshift
-  host: gitlab-gitlab.apps.cluster.opentlc.com
+  host: "gitlab-gitlab-ci.apps.cluster-tw2sn.tw2sn.sandbox1734.opentlc.com"
   https: "true"
   rootEmail: "admin@example.com"
   keyBase:
