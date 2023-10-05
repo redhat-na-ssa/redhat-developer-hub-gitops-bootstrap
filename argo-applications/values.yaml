@@ -29,7 +29,7 @@ gitlab:
     port: "22"
   rootPassword: openshift
   host: "gitlab-openshift-gitops.apps.cluster-tw2sn.tw2sn.sandbox1734.opentlc.com"
-  https: "true"
+  https: "false"
   rootEmail: "admin@example.com"
   keyBase:
     db: "0123456789"
