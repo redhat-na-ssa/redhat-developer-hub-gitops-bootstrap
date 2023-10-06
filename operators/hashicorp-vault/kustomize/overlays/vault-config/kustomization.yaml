@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../../bases/vault-config/
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/path
+        value: hub
+    target:
+      kind: KubernetesAuthEngineConfig
+  - patch: |-
+      - op: replace
+        path: /spec/path
+        value: hub
+    target:
+      kind: AuthEngineMount
+  - patch: |-
+      - op: replace
+        path: /spec/path
+        value: hub/okta
+      - op: replace
+        path: /spec/OIDCDiscoveryURL
+        value: "https://dev-98921715.okta.com"        
+    target:
+      kind: JWTOIDCAuthEngineConfig
+  - patch: |-
+      - op: replace
+        path: /spec/path
+        value: hub/okta
+      - op: replace
+        path: /spec/allowedRedirectURIs/1
+        value: "https://vault-vault.apps.pool2.practice.redhat.com/ui/vault/auth/oidc/oidc/callback"       
+    target:
+      kind: JWTOIDCAuthEngineRole                  

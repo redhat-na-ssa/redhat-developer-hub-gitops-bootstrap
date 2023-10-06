@@ -1,0 +1,9 @@
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: KubernetesAuthEngineConfig
+metadata:
+  name: kubernetes
+spec:
+  authentication: 
+    path: kubernetes
+    role: policy-admin
+  path: <cluster>

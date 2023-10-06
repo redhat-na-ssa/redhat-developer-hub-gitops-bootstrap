@@ -17,7 +17,8 @@ spec:
         ingress:
           annotations:
             route.openshift.io/termination: edge
+            kubernetes.io/tls-acme: true
           class: none
-          configureCertmanager: true
+          # configureCertmanager: true
       nginx-ingress:
         enabled: false

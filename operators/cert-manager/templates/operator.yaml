@@ -6,7 +6,7 @@ metadata:
   annotations:
     "helm.sh/hook-weight": "-5"
 spec:
-  channel: stable
+  # channel: stable
   installPlanApproval: Automatic
   name: cert-manager
   source: community-operators
