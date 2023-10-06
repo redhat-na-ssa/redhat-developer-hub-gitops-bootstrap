@@ -19,7 +19,7 @@ spec:
       recurse: false
   destination:
     server: https://kubernetes.default.svc
-    namespace: vault
+    namespace: vault-config-operator
   syncPolicy:
     automated:
       prune: true
