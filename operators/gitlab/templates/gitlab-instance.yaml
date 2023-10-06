@@ -12,7 +12,7 @@ spec:
         install: false
       global:
         hosts:
-          domain: example.com # does't work on ArgoCD yet {{ (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain }}
+          domain: example.com
         ingress:
           annotations:
             route.openshift.io/termination: edge
