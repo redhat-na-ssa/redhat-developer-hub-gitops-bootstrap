@@ -15,8 +15,6 @@ spec:
     repoURL: {{ .Values.gitRepo.URL }}
     targetRevision: {{ .Values.gitRepo.targetRevision }}
     path: operators/cert-manager
-    directory:
-      include: operator.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: openshift-operators
