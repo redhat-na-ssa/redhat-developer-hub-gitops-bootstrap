@@ -16,7 +16,7 @@ spec:
     targetRevision: {{ .Values.gitRepo.targetRevision }}
     path: operators/hashicorp-vault/kustomize/overlays/vault-chart
     directory:
-      recurse: true
+      recurse: false
   destination:
     server: https://kubernetes.default.svc
     namespace: vault
