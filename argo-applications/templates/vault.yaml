@@ -14,7 +14,7 @@ spec:
   source:
     repoURL: {{ .Values.gitRepo.URL }}
     targetRevision: {{ .Values.gitRepo.targetRevision }}
-    path: hashicorp-vault/kustomize/overlays
+    path: operators/hashicorp-vault/kustomize/overlays
     directory:
       recurse: true
   destination:
