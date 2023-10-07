@@ -22,7 +22,6 @@ spec:
           targetRevision: HEAD
         git: 
           organization: redhat-na-ssa
-    # directory
     directory:
       recurse: false
   # Destination cluster and namespace to deploy the application
