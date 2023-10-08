@@ -25,9 +25,9 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-    - CreateNamespace=true
+    - CreateNamespace=false
     - RespectIgnoreDifferences=true
-    - ApplyOutOfSyncOnly=true    
+    # - ApplyOutOfSyncOnly=true
     retry:
       limit: 5
       backoff:
