@@ -5,4 +5,4 @@ resources:
   - ./namespace.yaml
   - ./link.yaml
   - ./role-binding.yaml
-  - ./route.yaml
+  #- ./route.yaml
