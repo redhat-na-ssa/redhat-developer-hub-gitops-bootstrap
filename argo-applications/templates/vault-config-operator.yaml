@@ -8,7 +8,9 @@ metadata:
   finalizers:
   - resources-finalizer.argocd.argoproj.io
   annotations:
-    argocd.argoproj.io/sync-wave: "10"    
+    argocd.argoproj.io/sync-wave: "10"
+    argocd.argoproj.io/sync-options: Validate=false
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   project: default
   source:
