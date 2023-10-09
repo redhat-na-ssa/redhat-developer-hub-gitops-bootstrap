@@ -6,4 +6,6 @@ metadata:
   annotations:
     "helm.sh/hook-weight": "-5"
 spec:
-  targetNamespaces: []
+  upgradeStrategy: Default
+  targetNamespaces:
+  - cert-manager-operator
