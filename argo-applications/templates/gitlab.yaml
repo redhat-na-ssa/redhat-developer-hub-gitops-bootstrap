@@ -9,8 +9,6 @@ metadata:
   - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/sync-wave: "16"
-    argocd.argoproj.io/sync-options: Validate=false
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   project: default
   source:
@@ -25,6 +23,8 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
+    - Validate=false
+    - SkipDryRunOnMissingResource=true
     - CreateNamespace=true
     - RespectIgnoreDifferences=true
     - ApplyOutOfSyncOnly=true    

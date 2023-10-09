@@ -13,9 +13,9 @@ spec:
     ingress:
       enabled: false
     resources:
-      limits:
-        cpu: 500m
-        memory: 256Mi
+      # limits:
+      #   cpu: 500m
+      #   memory: 256Mi
       requests:
         cpu: 125m
         memory: 128Mi
@@ -41,11 +41,11 @@ spec:
   initialSSHKnownHosts: {}
   applicationSet:
     resources:
-      limits:
-        cpu: '2'
-        memory: 1Gi
+      # limits:
+      #   cpu: '2'
+      #   memory: 1Gi
       requests:
-        cpu: 250m
+        cpu: 500m
         memory: 512Mi
   rbac:
     defaultPolicy: 'role:admin'
@@ -53,9 +53,9 @@ spec:
     scopes: '[groups]'
   repo:
     resources:
-      limits:
-        cpu: '1'
-        memory: 1Gi
+      # limits:
+      #   cpu: '1'
+      #   memory: 1Gi
       requests:
         cpu: 250m
         memory: 256Mi
@@ -73,9 +73,9 @@ spec:
     dex:
       openShiftOAuth: true
       resources:
-        limits:
-          cpu: 500m
-          memory: 256Mi
+        # limits:
+        #   cpu: 500m
+        #   memory: 256Mi
         requests:
           cpu: 250m
           memory: 128Mi
@@ -85,9 +85,9 @@ spec:
     ca: {}
   redis:
     resources:
-      limits:
-        cpu: 500m
-        memory: 256Mi
+      # limits:
+      #   cpu: 500m
+      #   memory: 256Mi
       requests:
         cpu: 250m
         memory: 128Mi
