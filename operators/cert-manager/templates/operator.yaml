@@ -3,8 +3,6 @@ kind: Subscription
 metadata:
   name: openshift-cert-manager-operator
   namespace: cert-manager-operator
-  annotations:
-    "helm.sh/hook-weight": "-5"
 spec:
   # channel: stable-v1
   installPlanApproval: Automatic
