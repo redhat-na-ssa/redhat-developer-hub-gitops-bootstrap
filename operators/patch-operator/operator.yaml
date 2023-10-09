@@ -1,7 +1,8 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: patch-operator 
+  name: patch-operator
+  namespace: patch-operator
 spec:
   # channel: alpha
   installPlanApproval: Automatic
@@ -14,11 +15,12 @@ spec:
         memory: 2000Mi
       requests:
         cpu: 100m
-        memory: 500Mi 
+        memory: 500Mi
 ---
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
   name: patch-operator
+  namespace: patch-operator
 spec:
   targetNamespaces: []
