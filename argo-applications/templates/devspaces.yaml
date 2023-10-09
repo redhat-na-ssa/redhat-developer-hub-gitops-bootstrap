@@ -17,13 +17,13 @@ spec:
     path: operators/devspaces
   destination:
     server: https://kubernetes.default.svc
-    namespace: openshift-devspaces
+    namespace: openshift-operators
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-    - CreateNamespace=true
+    - CreateNamespace=false
     - RespectIgnoreDifferences=true
     - ApplyOutOfSyncOnly=true    
     retry:
