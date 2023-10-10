@@ -12,13 +12,15 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/redhat-cop/gitops-catalog #{{ .Values.gitRepo.URL }}
+    repoURL: {{ .Values.gitRepo.URL }}
+    #repoURL: https://github.com/redhat-cop/gitops-catalog
     targetRevision: {{ .Values.gitRepo.targetRevision }}
-    path: cert-manager-operator/operator/base #operators/cert-manager
+    path: operators/cert-manager
+    #path: cert-manager-operator/operator/base #operators/cert-manager
   destination:
     server: https://kubernetes.default.svc
-    namespace: cert-manager-operator
-    # namespace: openshift-operators
+    # namespace: cert-manager-operator
+    namespace: openshift-operators
   syncPolicy:
     automated:
       prune: true
