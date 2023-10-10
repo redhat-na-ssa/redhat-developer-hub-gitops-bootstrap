@@ -5,7 +5,7 @@ metadata:
   namespace: gitlab-system
 spec:
   chart:
-    version: 6.11.0
+    version: 7.4.1
     values:
       certmanager-issuer:
         email: {{ .Values.certmanager.issuer.email }}
