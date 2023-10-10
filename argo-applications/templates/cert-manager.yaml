@@ -30,7 +30,7 @@ spec:
     - SkipDryRunOnMissingResource=true
     - CreateNamespace=false
     - RespectIgnoreDifferences=true
-    - ApplyOutOfSyncOnly=true    
+    - ApplyOutOfSyncOnly=false    
     retry:
       backoff:
         duration: 5s # the amount to back off. Default unit is seconds, but could also be a duration (e.g. "2m", "1h")
