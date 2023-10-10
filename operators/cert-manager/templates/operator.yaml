@@ -12,6 +12,7 @@ spec:
   # source: redhat-operators
   # sourceNamespace: openshift-marketplace
   # startingCSV: cert-manager-operator.v1.12.0
+  channel: stable
   installPlanApproval: Automatic
   name: cert-manager
   source: community-operators
