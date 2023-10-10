@@ -54,7 +54,7 @@ helmCharts:
 
         route:
           enabled: true
-          host: vault-vault.apps.pool2.practice.redhat.com
+          host: ""
 
         extraVolumes:
           - type: secret
