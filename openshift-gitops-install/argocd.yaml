@@ -63,6 +63,7 @@ spec:
   resourceExclusions: |
     - apiGroups:
       - tekton.dev
+      - tekton.dev
       clusters:
       - '*'
       kinds:
