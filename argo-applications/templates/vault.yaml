@@ -42,3 +42,7 @@ spec:
     name: vault-agent-injector-cfg
     jsonPointers:
     - /webhooks/0/clientConfig/caBundle
+  - group: console.openshift.io
+    kind: ConsoleLink
+    jsonPointers:
+    - /spec/href

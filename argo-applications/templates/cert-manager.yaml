@@ -23,7 +23,7 @@ spec:
     namespace: openshift-operators
   syncPolicy:
     automated:
-      prune: true
+      prune: false
       selfHeal: true
     syncOptions:
     - Validate=false
