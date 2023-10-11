@@ -4,20 +4,18 @@ subscription:
   name: rhsso-operator
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  # check current versions with
-  # > oc get packagemanifests rhsso-operator -n openshift-marketplace -o json | jq '.status.channels[].currentCSV'
-  # startingCSV: rhsso-operator.7.6.5-opr-002
+  startingCSV: rhsso-operator.7.6.4-opr-002
 realm:
   identityProviders:
     - alias: Gitlab
       providerId: oidc
-      clientId: xxxxe491b3aa6009b5ad560ee6af484bf0a0c9dea0a899dc31660fdc147eyyyy
-      tokenUrl: https://gitlab-gitlab.cluster-domain/oauth/token
-      authorizationUrl: https://gitlab-gitlab.cluster-domain/oauth/authorize
+      clientId: 8e1ce491b3aa6009b5ad560ee6af484bf0a0c9dea0a899dc31660fdc147eb5bb
+      tokenUrl: https://gitlab-gitlab.apps.cluster-ctmxg.ctmxg.sandbox430.opentlc.com/oauth/token
+      authorizationUrl: https://gitlab-gitlab.apps.cluster-ctmxg.ctmxg.sandbox430.opentlc.com/oauth/authorize
       clientAuthMethod: client_secret_basic
       syncMode: IMPORT
-      clientSecret: "xxxx38be23d67a9c992234bc07cb922c2302f2d8a5d24b97e9aa9019517byyyy
+      clientSecret: "70c338be23d67a9c992234bc07cb922c2302f2d8a5d24b97e9aa9019517bccb9"
 client:
   redirectUri:
-  - https://backstage-backstage.cluster-domain/oauth2/callback
+  - https://backstage-backstage.apps.cluster-ctmxg.ctmxg.sandbox430.opentlc.com/oauth2/callback
 
