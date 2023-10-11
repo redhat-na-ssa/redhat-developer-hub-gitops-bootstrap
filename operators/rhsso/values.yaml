@@ -1,0 +1,22 @@
+subscription:
+  channel: stable
+  installPlanApproval: Automatic
+  name: rhsso-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+  # check current versions with
+  # > oc get packagemanifests rhsso-operator -n openshift-marketplace -o json | jq '.status.channels[].currentCSV'
+  # startingCSV: rhsso-operator.7.6.5-opr-002
+realm:
+  identityProviders:
+    - alias: Gitlab
+      providerId: oidc
+      clientId: xxxxe491b3aa6009b5ad560ee6af484bf0a0c9dea0a899dc31660fdc147eyyyy
+      tokenUrl: https://gitlab-gitlab.cluster-domain/oauth/token
+      authorizationUrl: https://gitlab-gitlab.cluster-domain/oauth/authorize
+      clientAuthMethod: client_secret_basic
+      syncMode: IMPORT
+      clientSecret: "xxxx38be23d67a9c992234bc07cb922c2302f2d8a5d24b97e9aa9019517byyyy
+client:
+  redirectUri:
+  - https://backstage-backstage.cluster-domain/oauth2/callback

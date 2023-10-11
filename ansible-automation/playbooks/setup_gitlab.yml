@@ -1,0 +1,101 @@
+---
+- name: Get Gitlab toolbox POD
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: "{{ ocp4_workload_redhat_developer_hub_gitlab_namespace }}"
+    label_selectors:
+      - app=toolbox
+    field_selectors:
+      - status.phase=Running
+  register: gitlab_toolbox_pod
+  until: (gitlab_toolbox_pod.resources | list | length) == 1
+
+- name: Extract Pod metadata
+  ansible.builtin.set_fact:
+    gitlab_toolbox_pod_name: "{{ gitlab_toolbox_pod.resources[0].metadata.name }}"
+  no_log: true
+
+# - name: POD Name
+#   ansible.builtin.debug:
+#     msg: "{{ gitlab_toolbox_pod_name }}"
+
+- name: Generate a random string
+  ansible.builtin.set_fact:
+    random_str_token: "{{ lookup('ansible.builtin.password', '/dev/null', chars=['ascii_letters', 'digits'], length=20) }}"
+
+# References for this approach:
+# - https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html
+# - https://docs.gitlab.com/charts/troubleshooting/kubernetes_cheat_sheet.html#gitlab-specific-kubernetes-information
+- name: Create a PAT for Gitlab Admin (root) user
+  kubernetes.core.k8s_exec:
+    namespace: "{{ ocp4_workload_redhat_developer_hub_gitlab_namespace }}"
+    pod: "{{ gitlab_toolbox_pod_name }}"
+    container: "toolbox"
+    command: |
+      /srv/gitlab/bin/rails runner "token = User.find_by_username('root').personal_access_tokens.create(scopes: ['api'], name: 'Automation token', expires_at: 365.days.from_now); token.set_token('{{ random_str_token }}'); token.save!"
+  register: command_status
+
+# - name: Command result
+#   ansible.builtin.debug:
+#     var: command_status
+
+- name: Gitlab root token
+  ansible.builtin.set_fact:
+    ocp4_workload_redhat_developer_hub_gitlab_root_token: "{{ random_str_token }}"
+
+- name: Create vault secret for Gitlab root token
+  ansible.builtin.shell: |
+    oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
+      }} -- vault kv put -tls-skip-verify kv/secrets/janusidp/gitlab token={{ 
+        ocp4_workload_redhat_developer_hub_gitlab_root_token }}
+    oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
+      }} -- vault kv put -tls-skip-verify kv/secrets/janusidp/gitlab_webhook secret={{ 
+        lookup('ansible.builtin.password', '/dev/null chars=ascii_lowercase length=12') }}
+
+- name: Create a GitLab application for Keaycloack
+  ansible.builtin.uri:
+    url: https://{{ ocp4_workload_redhat_developer_hub_gitlab_host }}/api/v4/applications
+    method: POST
+    body_format: form-urlencoded
+    body:
+      name: keycloak
+      redirect_uri: https://{{ ocp4_workload_redhat_developer_hub_keycloak_host }}/auth/realms/backstage/broker/GitLab/endpoint
+      scopes: api read_user read_repository write_repository sudo openid profile email
+      confidential: false
+    headers:
+      PRIVATE-TOKEN: "{{ ocp4_workload_redhat_developer_hub_gitlab_root_token }}"
+    validate_certs: false
+    status_code: [201]
+  register: r_keycloak_app
+  retries: 60
+  delay: 10
+  until: r_keycloak_app.status == 201
+
+- name: Get Keycloak client credentials
+  ansible.builtin.set_fact:
+    ocp4_workload_redhat_developer_hub_keycloak_client_id: "{{ r_keycloak_app.json.application_id }}"
+    ocp4_workload_redhat_developer_hub_keycloak_client_secret: "{{ r_keycloak_app.json.secret }}"
+
+- name: Create Devspaces GitLab application
+  ansible.builtin.uri:
+    url: https://{{ ocp4_workload_redhat_developer_hub_gitlab_host }}/api/v4/applications
+    method: POST
+    body_format: form-urlencoded
+    body:
+      name: devspaces
+      redirect_uri: https://{{ ocp4_workload_redhat_developer_hub_devspaces_host }}/api/oauth/callback
+      scopes: api read_user read_repository write_repository sudo openid profile email
+      confidential: false
+    headers:
+      PRIVATE-TOKEN: "{{ ocp4_workload_redhat_developer_hub_gitlab_root_token }}"
+    validate_certs: false
+    status_code: [201]
+  register: r_devspaces_app
+  retries: 60
+  delay: 10
+  until: r_devspaces_app.status == 201
+
+- name: Get Keycloak client credentials
+  ansible.builtin.set_fact:
+    ocp4_workload_redhat_developer_hub_devspaces_client_id: "{{ r_devspaces_app.json.application_id }}"
+    ocp4_workload_redhat_developer_hub_devspaces_client_secret: "{{ r_devspaces_app.json.secret }}"

@@ -61,7 +61,7 @@ spec:
             values:
               global:
                 hosts:
-                  domain: {{ "{{" }} $clusterDomain {{ "}}" }}
+                  domain: gitlab-gitlab-system.{{ "{{" }} $clusterDomain {{ "}}" }}
       patchType: application/merge-patch+json
     vault-console-link:
       targetObjectRef:
@@ -77,6 +77,21 @@ spec:
         {{ "{{-" }} $clusterDomain:= (index . 1).spec.domain {{ "-}}" }}
         spec:
           href: https://vault-vault.{{ "{{" }} $clusterDomain {{ "}}" }}
+      patchType: application/merge-patch+json
+    vault-route:
+      targetObjectRef:
+        apiVersion: route.openshift.io/v1
+        kind: Route
+        name: vault
+      # these are the objects that will be watched and become part of the parameters of the patch template.
+      sourceObjectRefs:
+      - apiVersion: config.openshift.io/v1
+        kind: Ingress
+        name: cluster
+      patchTemplate: |
+        {{ "{{-" }} $clusterDomain:= (index . 1).spec.domain {{ "-}}" }}
+        spec:
+          host: vault-vault.{{ "{{" }} $clusterDomain {{ "}}" }}
       patchType: application/merge-patch+json
     github-ocp-oauth-provider:
       targetObjectRef:

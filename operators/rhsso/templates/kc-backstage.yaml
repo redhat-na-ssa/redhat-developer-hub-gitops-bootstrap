@@ -1,0 +1,38 @@
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakClient
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  labels:
+    app: rhsso-backstage
+    app.kubernetes.io/instance: rhsso-backstage
+    app.kubernetes.io/name: rhsso-backstage
+  name: backstage
+spec:
+  client:
+    clientAuthenticatorType: client-secret
+    clientId: backstage
+    defaultClientScopes:
+    - profile
+    - email
+    - roles
+    directAccessGrantsEnabled: true
+    implicitFlowEnabled: false
+    publicClient: false
+    redirectUris:
+{{- range $item := $.Values.client.redirectUri }}
+    - "{{ $item }}"
+{{- end }}
+    serviceAccountsEnabled: true
+    standardFlowEnabled: true
+  realmSelector:
+    matchLabels:
+      app: rhsso-backstage
+      app.kubernetes.io/instance: rhsso-backstage
+      app.kubernetes.io/name: rhsso-backstage
+  serviceAccountClientRoles:
+    realm-management:
+    - query-groups
+    - query-users
+    - view-users

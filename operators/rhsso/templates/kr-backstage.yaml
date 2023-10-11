@@ -1,0 +1,38 @@
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakRealm
+metadata:
+  name: backstage
+  labels:
+    app: rhsso-backstage
+    app.kubernetes.io/instance: rhsso-backstage
+    app.kubernetes.io/name: rhsso-backstage
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  instanceSelector:
+    matchLabels:
+      app: rhsso-backstage
+      app.kubernetes.io/instance: rhsso-backstage
+      app.kubernetes.io/name: rhsso-backstage
+  realm:
+    displayName: Backstage Authentication Realm
+    enabled: true
+    id: backstage
+    identityProviders:
+{{- range $item := $.Values.realm.identityProviders }}
+      - alias: "{{ $item.alias }}"
+        providerId: "{{ $item.providerId }}"
+        enabled: true
+        trustEmail: true
+        firstBrokerLoginFlowAlias: first broker login
+        config:
+          clientId: "{{ $item.clientId }}"
+          tokenUrl: "{{ $item.tokenUrl }}"
+          authorizationUrl: "{{ $item.authorizationUrl }}"
+          clientAuthMethod: "{{ $item.clientAuthMethod }}"
+          syncMode: IMPORT
+          clientSecret: "{{ $item.clientSecret }}"
+          useJwksUrl: 'true'
+{{- end }}
+    realm: backstage

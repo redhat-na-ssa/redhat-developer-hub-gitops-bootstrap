@@ -1,0 +1,15 @@
+apiVersion: keycloak.org/v1alpha1
+kind: Keycloak
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  labels:
+    app: rhsso-backstage
+    app.kubernetes.io/instance: rhsso-backstage
+    app.kubernetes.io/name: rhsso-backstage
+  name: rhsso-backstage
+spec:
+  externalAccess:
+    enabled: true
+  instances: 1

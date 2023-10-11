@@ -1,0 +1,65 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rhsso-backstage
+  namespace: openshift-gitops
+spec:
+  destination:
+    namespace: {{ ocp4_workload_redhat_developer_hub_backstage_namespace }}
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    helm:
+      parameters:
+        - name: client.redirectUri[0]
+          value: https://{{ ocp4_workload_redhat_developer_hub_backstage_host }}/oauth2/callback
+        - name: realm.identityProviders[0].alias
+          value: GitLab
+        - name: realm.identityProviders[0].providerId
+          value: oidc
+        - name: realm.identityProviders[0].clientId
+          value: {{ ocp4_workload_redhat_developer_hub_keycloak_client_id }}
+        - name: realm.identityProviders[0].clientSecret
+          value: {{ ocp4_workload_redhat_developer_hub_keycloak_client_secret }}
+        - name: realm.identityProviders[0].tokenUrl
+          value: https://{{ ocp4_workload_redhat_developer_hub_gitlab_host }}/oauth/token
+        - name: realm.identityProviders[0].authorizationUrl
+          value: https://{{ ocp4_workload_redhat_developer_hub_gitlab_host }}/oauth/authorize
+        - name: realm.identityProviders[0].clientAuthMethod
+          value: client_secret_basic
+        - name: realm.identityProviders[0].syncMode
+          value: IMPORT
+        - name: subscription.channel
+          value: stable
+        - name: subscription.installPlanApproval
+          value: Automatic
+        - name: subscription.name
+          value: rhsso-operator
+        - name: subscription.source
+          value: redhat-operators
+        - name: subscription.sourceNamespace
+          value: openshift-marketplace
+        - name: subscription.startingCSV
+          value: rhsso-operator.7.6.5-opr-002
+    path: operators/rhsso
+    repoURL: {{ ocp4_workload_redhat_developer_hub_backstage_gitops_repo }}
+    targetRevision: HEAD
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openshift-operators
+  syncPolicy:
+    automated: {}
+      # prune: true
+      # selfHeal: true
+    syncOptions:
+    - Validate=false
+    - SkipDryRunOnMissingResource=true
+    - CreateNamespace=true
+    - RespectIgnoreDifferences=true
+    - ApplyOutOfSyncOnly=true    
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s # the amount to back off. Default unit is seconds, but could also be a duration (e.g. "2m", "1h")
+        factor: 2 # a factor to multiply the base duration after each failed retry
+        maxDuration: 10m # the maximum amount of time allowed for the backoff strategy
