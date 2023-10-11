@@ -20,3 +20,4 @@ realm:
 client:
   redirectUri:
   - https://backstage-backstage.cluster-domain/oauth2/callback
+

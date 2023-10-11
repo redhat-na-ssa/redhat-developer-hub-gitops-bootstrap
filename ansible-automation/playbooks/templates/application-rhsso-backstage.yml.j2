@@ -44,9 +44,6 @@ spec:
     path: operators/rhsso
     repoURL: {{ ocp4_workload_redhat_developer_hub_backstage_gitops_repo }}
     targetRevision: HEAD
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: openshift-operators
   syncPolicy:
     automated: {}
       # prune: true
