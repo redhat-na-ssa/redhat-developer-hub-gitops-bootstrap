@@ -9,13 +9,13 @@
   retries: 120
   delay: 10
   until:
-  - r_root_token is defined
-  - r_root_token.resources is defined
-  - r_root_token.resources | length > 0
-  - r_root_token.resources[0] is defined
-  - r_root_token.resources[0].data is defined
-  - r_root_token.resources[0].data.root_token is defined
-  - r_root_token.resources[0].data.root_token | length > 0
+    - r_root_token is defined
+    - r_root_token.resources is defined
+    - r_root_token.resources | length > 0
+    - r_root_token.resources[0] is defined
+    - r_root_token.resources[0].data is defined
+    - r_root_token.resources[0].data.root_token is defined
+    - r_root_token.resources[0].data.root_token | length > 0
 
 - name: Decode vault init root token
   ansible.builtin.set_fact:
@@ -24,29 +24,29 @@
 - name: Create vault auth resources
   k8s:
     state: present
-    definition: "{{ lookup('template',  item ) | from_yaml }}"
+    definition: "{{ lookup('template', item) | from_yaml }}"
   loop:
-  - service-account-vault.yml.j2
-  - cluster-role-binding-role-token-review.yml.j2
-  - secret-vault-auth.yml.j2
+    - service-account-vault.yml.j2
+    - cluster-role-binding-role-token-review.yml.j2
+    - secret-vault-auth.yml.j2
 
 - name: Login to vault
   ansible.builtin.shell: |
     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
-    }} -- vault login -tls-skip-verify {{ ocp4_workload_redhat_developer_hub_vault_token }}
+      }} -- vault login -tls-skip-verify {{ ocp4_workload_redhat_developer_hub_vault_token }}
 
 - name: Create vault policy
   ansible.builtin.shell: |
     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
-    }} -- bash -c 'rm -rf /tmp/rhdh-policy.hcl'
+      }} -- bash -c 'rm -rf /tmp/rhdh-policy.hcl'
     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
-    }} -- bash -c 'echo path \"*\" >> /tmp/rhdh-policy.hcl'
+      }} -- bash -c 'echo path \"*\" >> /tmp/rhdh-policy.hcl'
     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
-    }} -- bash -c 'echo {  capabilities = [\"read\", \"list\"] >> /tmp/rhdh-policy.hcl'
+      }} -- bash -c 'echo {  capabilities = [\"read\", \"list\"] >> /tmp/rhdh-policy.hcl'
     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
-    }} -- bash -c 'echo } >> /tmp/rhdh-policy.hcl'
+      }} -- bash -c 'echo } >> /tmp/rhdh-policy.hcl'
     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
-    }} -- bash -c 'vault policy write -address https://vault.vault.svc:8200 rhdh-policy /tmp/rhdh-policy.hcl'
+      }} -- bash -c 'vault policy write -address https://vault.vault.svc:8200 rhdh-policy /tmp/rhdh-policy.hcl'
 
 - name: Enable kubernetes auth
   ansible.builtin.shell: |
@@ -59,9 +59,9 @@
     export K8S_HOST=$(oc config view --raw --minify --flatten \
     --output 'jsonpath={.clusters[].cluster.server}')
     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
-    }} -- vault auth enable -address https://vault.vault.svc:8200 kubernetes
+      }} -- vault auth enable -address https://vault.vault.svc:8200 kubernetes
     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
-    }} -- vault write -address https://vault.vault.svc:8200 auth/kubernetes/config \
+      }} -- vault write -address https://vault.vault.svc:8200 auth/kubernetes/config \
     token_reviewer_jwt="$SA_JWT_TOKEN" \
     kubernetes_host="$K8S_HOST" \
     kubernetes_ca_cert="$SA_CA_CRT" \
@@ -70,7 +70,7 @@
 - name: Create role and service account authentication
   ansible.builtin.shell: |
     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
-    }} -- vault write -address https://vault.vault.svc:8200 auth/kubernetes/role/rhdh-role \
+      }} -- vault write -address https://vault.vault.svc:8200 auth/kubernetes/role/rhdh-role \
     bound_service_account_names=vault-auth \
     bound_service_account_namespaces=default \
     token_policies=rhdh-policy \
@@ -84,3 +84,4 @@
 - name: Enable kv version 2
   ansible.builtin.shell: |
     oc exec vault-0 -c vault -n vault -- vault secrets enable -address https://vault.vault.svc:8200 -version=2 kv
+  ignore_errors: true

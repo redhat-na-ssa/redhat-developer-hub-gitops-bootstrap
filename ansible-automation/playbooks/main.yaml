@@ -23,26 +23,27 @@
         name: cluster
       register: r_ingress_config
 
-    - name: Get OpenShift Apps Domain
+    - name: Set OpenShift Cluster Domain
       ansible.builtin.set_fact:
         ocp4_workload_redhat_developer_hub_apps_domain: "{{ r_ingress_config.resources[0].spec.domain }}"
-        ocp4_workload_redhat_developer_hub_gitlab_host: "gitlab.{{
-          r_ingress_config.resources[0].spec.domain }}"
-        # ocp4_workload_redhat_developer_hub_gitlab_host: "gitlab-{{
-        #   ocp4_workload_redhat_developer_hub_gitlab_namespace }}.{{
-        #   r_ingress_config.resources[0].spec.domain }}"
+
+    - name: Set OpenShift Apps URLs
+      ansible.builtin.set_fact:
+        ocp4_workload_redhat_developer_hub_gitlab_host: "gitlab.gitlab-{{
+          ocp4_workload_redhat_developer_hub_gitlab_namespace }}.{{
+          ocp4_workload_redhat_developer_hub_apps_domain }}"
         ocp4_workload_redhat_developer_hub_keycloak_host: "keycloak-{{
           ocp4_workload_redhat_developer_hub_backstage_namespace }}.{{
-          r_ingress_config.resources[0].spec.domain }}"
+          ocp4_workload_redhat_developer_hub_apps_domain }}"
         ocp4_workload_redhat_developer_hub_backstage_host: "backstage-{{
           ocp4_workload_redhat_developer_hub_backstage_namespace }}.{{
-          r_ingress_config.resources[0].spec.domain }}"
+          ocp4_workload_redhat_developer_hub_apps_domain }}"
         ocp4_workload_redhat_developer_hub_devspaces_host: "devspaces.{{
-          r_ingress_config.resources[0].spec.domain }}"
+          ocp4_workload_redhat_developer_hub_apps_domain }}"
         ocp4_workload_redhat_developer_hub_openshift_redirect_host: "oauth-openshift.{{
-          r_ingress_config.resources[0].spec.domain }}"
+          ocp4_workload_redhat_developer_hub_apps_domain }}"
         ocp4_workload_redhat_developer_hub_openshift_console_host: console-openshift-console.{{
-          r_ingress_config.resources[0].spec.domain }}
+          ocp4_workload_redhat_developer_hub_apps_domain }}
         ocp4_workload_redhat_developer_hub_quay_host: "quay.io"
 
     - name: Debug vars
@@ -57,21 +58,21 @@
           - "ocp4_workload_redhat_developer_hub_openshift_console_host: {{ ocp4_workload_redhat_developer_hub_openshift_console_host }}"
           - "ocp4_workload_redhat_developer_hub_quay_host: {{ ocp4_workload_redhat_developer_hub_quay_host }}"
 
-    # - name: Setup Vault
-    #   ansible.builtin.include_tasks:
-    #     file: ./setup_vault.yml
+    - name: Setup Vault
+      ansible.builtin.include_tasks:
+        file: ./setup_vault.yml
 
     - name: Setup Gitlab dependencies
       ansible.builtin.include_tasks:
         file: ./setup_gitlab.yml
 
-  # - name: Setup RHSSO dependencies
-  #   include_tasks:
-  #     file: ./setup_rhsso.yml
+    - name: Setup RHSSO dependencies
+      ansible.builtin.include_tasks:
+        file: ./setup_rhsso.yml
 
-  # - name: Setup Gitlab repo dependencies
-  #   include_tasks:
-  #     file: ./setup_templates.yml
-  #   loop: "{{ ocp4_workload_redhat_developer_hub_gitlab_template_locations }}"
-  #   loop_control:
-  #     loop_var: location
+    # - name: Setup Gitlab repo dependencies
+    #   include_tasks:
+    #     file: ./setup_templates.yml
+    #   loop: "{{ ocp4_workload_redhat_developer_hub_gitlab_template_locations }}"
+    #   loop_control:
+    #     loop_var: location

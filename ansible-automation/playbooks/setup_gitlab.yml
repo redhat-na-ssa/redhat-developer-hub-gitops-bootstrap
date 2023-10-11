@@ -46,10 +46,10 @@
 - name: Create vault secret for Gitlab root token
   ansible.builtin.shell: |
     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
-      }} -- vault kv put -tls-skip-verify kv/secrets/janusidp/gitlab token={{ 
+      }} -- vault kv put -tls-skip-verify kv/secrets/janusidp/gitlab token={{
         ocp4_workload_redhat_developer_hub_gitlab_root_token }}
     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
-      }} -- vault kv put -tls-skip-verify kv/secrets/janusidp/gitlab_webhook secret={{ 
+      }} -- vault kv put -tls-skip-verify kv/secrets/janusidp/gitlab_webhook secret={{
         lookup('ansible.builtin.password', '/dev/null chars=ascii_lowercase length=12') }}
 
 - name: Create a GitLab application for Keaycloack
