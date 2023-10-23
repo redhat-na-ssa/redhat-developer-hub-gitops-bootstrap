@@ -288,17 +288,17 @@ helmCharts:
 
           - name: github-module-loader
             image: registry.connect.redhat.com/hashicorp/vault:1.12.3-ubi
-            env: 
-            - name: VAULT_TLS_SERVER_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: vault-env-vars
-                  key: VAULT_TLS_SERVER_NAME
-            - name: VAULT_CACERT
-              valueFrom:
-                secretKeyRef:
-                  name: vault-env-vars
-                  key: VAULT_CACERT  
+            # env: 
+            # - name: VAULT_TLS_SERVER_NAME
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: vault-env-vars
+            #       key: VAULT_TLS_SERVER_NAME
+            # - name: VAULT_CACERT
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: vault-env-vars
+            #       key: VAULT_CACERT  
             command: 
             - /bin/bash
             - -c
@@ -332,17 +332,17 @@ helmCharts:
 
           - name: quay-module-loader
             image: registry.connect.redhat.com/hashicorp/vault:1.12.3-ubi
-            env: 
-            - name: VAULT_TLS_SERVER_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: vault-env-vars
-                  key: VAULT_TLS_SERVER_NAME
-            - name: VAULT_CACERT
-              valueFrom:
-                secretKeyRef:
-                  name: vault-env-vars
-                  key: VAULT_CACERT   
+            # env: 
+            # - name: VAULT_TLS_SERVER_NAME
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: vault-env-vars
+            #       key: VAULT_TLS_SERVER_NAME
+            # - name: VAULT_CACERT
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: vault-env-vars
+            #       key: VAULT_CACERT   
             command: 
             - /bin/bash
             - -c
