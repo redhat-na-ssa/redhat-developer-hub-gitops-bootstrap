@@ -327,8 +327,8 @@ helmCharts:
                 mountPath: /usr/local/libexec/vault
               - name: vault-root-token
                 mountPath: /vault-root-token
-              - mountPath: "/etc/vault-tls/vault-cert"
-                name: "vault-cert"
+              # - mountPath: "/etc/vault-tls/vault-cert"
+              #   name: "vault-cert"
 
           - name: quay-module-loader
             image: registry.connect.redhat.com/hashicorp/vault:1.12.3-ubi
@@ -371,5 +371,5 @@ helmCharts:
                 mountPath: /usr/local/libexec/vault
               - name: vault-root-token
                 mountPath: /vault-root-token
-              - mountPath: "/etc/vault-tls/vault-cert"
-                name: "vault-cert" 
+              # - mountPath: "/etc/vault-tls/vault-cert"
+              #   name: "vault-cert" 
