@@ -51,7 +51,6 @@ helmCharts:
         extraEnvironmentVars:
           VAULT_CACERT: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
 
-
         route:
           enabled: true
           host: ""
@@ -112,7 +111,57 @@ helmCharts:
                 chmod +x jq
             volumeMounts:
               - name: plugins
-                mountPath: /usr/local/libexec/vault          
+                mountPath: /usr/local/libexec/vault
+
+          - name: quay-module-downloader
+            image: registry.access.redhat.com/ubi8/ubi:8.5
+            command: 
+            - /bin/bash
+            - -c
+            - | 
+                export PLUGIN_VERSION=v0.0.1-rc4
+                cd /usr/local/libexec/vault
+                curl -L -o vault-plugin-secrets-quay-linux-amd64 https://github.com/redhat-cop/vault-plugin-secrets-quay/releases/download/${PLUGIN_VERSION}/vault-plugin-secrets-quay-linux-amd64 
+                chmod +x vault-plugin-secrets-quay-linux-amd64
+                curl -L -o quay_SHA256SUMS https://github.com/redhat-cop/vault-plugin-secrets-quay/releases/download/${PLUGIN_VERSION}/checksums.txt
+            volumeMounts:
+              - name: plugins
+                mountPath: /usr/local/libexec/vault            
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              privileged: false
+              runAsNonRoot: true
+              ## For OCP 4.10 and earlier comment out the next 2 lines
+              seccompProfile:
+                type: RuntimeDefault
+
+          - name: github-module-downloader
+            image: registry.access.redhat.com/ubi8/ubi:8.5
+            command: 
+            - /bin/bash
+            - -c
+            - | 
+                export PLUGIN_VERSION=v2.0.0
+                cd /usr/local/libexec/vault
+                curl -L -o vault-plugin-secrets-github-linux-amd64 https://github.com/martinbaillie/vault-plugin-secrets-github/releases/download/${PLUGIN_VERSION}/vault-plugin-secrets-github-linux-amd64 
+                chmod +x vault-plugin-secrets-github-linux-amd64
+                curl -L -o SHA256SUMS https://github.com/martinbaillie/vault-plugin-secrets-github/releases/download/${PLUGIN_VERSION}/SHA256SUMS
+            volumeMounts:
+              - name: plugins
+                mountPath: /usr/local/libexec/vault
+            securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            runAsNonRoot: true
+            ## For OCP 4.10 and earlier comment out the next 2 lines
+            seccompProfile:
+              type: RuntimeDefault
 
         extraContainers:
           # you should not do this in production
@@ -211,7 +260,7 @@ helmCharts:
                         path "/*" {
                           capabilities = ["create", "read", "update", "delete", "list","sudo"]
                         }
-              EOF
+                      EOF
                     else 
                       echo vault admin already configured, just updating kubernetes config
                       vault write auth/kubernetes/config token_reviewer_jwt=@/var/run/secrets/kubernetes.io/serviceaccount/token kubernetes_host=https://kubernetes.default.svc:443 kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt 
@@ -235,4 +284,92 @@ helmCharts:
               - name: vault-root-token
                 mountPath: /vault-root-token
               - name: plugins
-                mountPath: /usr/local/libexec/vault       
+                mountPath: /usr/local/libexec/vault
+
+          - name: github-module-loader
+            image: registry.connect.redhat.com/hashicorp/vault:1.12.3-ubi
+            env: 
+            - name: VAULT_TLS_SERVER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: vault-env-vars
+                  key: VAULT_TLS_SERVER_NAME
+            - name: VAULT_CACERT
+              valueFrom:
+                secretKeyRef:
+                  name: vault-env-vars
+                  key: VAULT_CACERT  
+            command: 
+            - /bin/bash
+            - -c
+            - | 
+                while true; do
+                  sleep 5
+                  if [[ -f /vault-root-token/root_token ]]; then
+                    export VAULT_TOKEN=$(cat /vault-root-token/root_token)
+                    if [[ $(vault status | grep "Sealed" | grep "false") ]]; then
+                      if [[ $(vault plugin list secret | grep vault-plugin-secrets-github) ]]; then
+                        echo vault-plugin-secrets-github plugin already installed
+                        sleep 5
+                      else
+                        echo SHA256SUM $(grep vault-plugin-secrets-github-linux-amd64 /usr/local/libexec/vault/SHA256SUMS | cut -d' ' -f1)
+                        vault plugin register -sha256=$(grep vault-plugin-secrets-github-linux-amd64 /usr/local/libexec/vault/SHA256SUMS | cut -d' ' -f1) -command=vault-plugin-secrets-github-linux-amd64 -args="--tls-skip-verify=true" secret vault-plugin-secrets-github
+                      fi
+                    else
+                      echo vault still sealed
+                    fi    
+                  else 
+                    echo root token not initialized yet    
+                  fi    
+                done
+            volumeMounts:
+              - name: plugins
+                mountPath: /usr/local/libexec/vault
+              - name: vault-root-token
+                mountPath: /vault-root-token
+              - mountPath: "/etc/vault-tls/vault-cert"
+                name: "vault-cert"
+
+          - name: quay-module-loader
+            image: registry.connect.redhat.com/hashicorp/vault:1.12.3-ubi
+            env: 
+            - name: VAULT_TLS_SERVER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: vault-env-vars
+                  key: VAULT_TLS_SERVER_NAME
+            - name: VAULT_CACERT
+              valueFrom:
+                secretKeyRef:
+                  name: vault-env-vars
+                  key: VAULT_CACERT   
+            command: 
+            - /bin/bash
+            - -c
+            - | 
+                while true; do
+                  sleep 5
+                  if [[ -f /vault-root-token/root_token ]]; then
+                    export VAULT_TOKEN=$(cat /vault-root-token/root_token)
+                    if [[ $(vault status | grep "Sealed" | grep "false") ]]; then
+                      if [[ $(vault plugin list secret | grep vault-plugin-secrets-quay) ]]; then
+                        echo vault-plugin-secrets-quay plugin already installed
+                        sleep 5
+                      else
+                        echo quay_SHA256SUM $(grep -w vault-plugin-secrets-quay-linux-amd64 /usr/local/libexec/vault/quay_SHA256SUMS | cut -d' ' -f1)
+                        vault plugin register -sha256=$(grep -w vault-plugin-secrets-quay-linux-amd64 /usr/local/libexec/vault/quay_SHA256SUMS | cut -d' ' -f1) -command=vault-plugin-secrets-quay-linux-amd64 -args="--tls-skip-verify=true" secret vault-plugin-secrets-quay
+                      fi
+                    else
+                      echo vault still sealed
+                    fi    
+                  else 
+                    echo root token not initialized yet    
+                  fi    
+                done
+            volumeMounts:
+              - name: plugins
+                mountPath: /usr/local/libexec/vault
+              - name: vault-root-token
+                mountPath: /vault-root-token
+              - mountPath: "/etc/vault-tls/vault-cert"
+                name: "vault-cert" 

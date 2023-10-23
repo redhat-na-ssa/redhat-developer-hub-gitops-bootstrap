@@ -29,7 +29,7 @@
     ocp4_workload_redhat_developer_hub_backstage_client_secret: "{{ r_realm_credentials.resources[0].data.CLIENT_SECRET | b64decode }}"
 
 #------
-# From here only if you want to Users to Login on OCP though Keycloak 
+# From here only if you want Users to Login on OCP though Keycloak 
 #------
 # - name: Create Openshift SSO via Keycloak
 #   block:
