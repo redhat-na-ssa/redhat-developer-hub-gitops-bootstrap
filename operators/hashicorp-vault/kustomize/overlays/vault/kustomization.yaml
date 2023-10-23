@@ -288,7 +288,7 @@ helmCharts:
 
           - name: github-module-loader
             image: registry.connect.redhat.com/hashicorp/vault:1.12.3-ubi
-            # env: 
+            env:
             # - name: VAULT_TLS_SERVER_NAME
             #   valueFrom:
             #     secretKeyRef:
@@ -298,7 +298,13 @@ helmCharts:
             #   valueFrom:
             #     secretKeyRef:
             #       name: vault-env-vars
-            #       key: VAULT_CACERT  
+            #       key: VAULT_CACERT
+            - name: VAULT_SKIP_VERIFY
+              value: "true"        
+            - name: VAULT_ADDR
+              value: https://localhost:8200
+            - name: VAULT_CACERT
+              value: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
             command: 
             - /bin/bash
             - -c
@@ -332,7 +338,7 @@ helmCharts:
 
           - name: quay-module-loader
             image: registry.connect.redhat.com/hashicorp/vault:1.12.3-ubi
-            # env: 
+            env:
             # - name: VAULT_TLS_SERVER_NAME
             #   valueFrom:
             #     secretKeyRef:
@@ -342,7 +348,13 @@ helmCharts:
             #   valueFrom:
             #     secretKeyRef:
             #       name: vault-env-vars
-            #       key: VAULT_CACERT   
+            #       key: VAULT_CACERT
+            - name: VAULT_SKIP_VERIFY
+              value: "true"        
+            - name: VAULT_ADDR
+              value: https://localhost:8200
+            - name: VAULT_CACERT
+              value: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt  
             command: 
             - /bin/bash
             - -c
