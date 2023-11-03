@@ -35,9 +35,9 @@
     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
       }} -- vault login -tls-skip-verify {{ ocp4_workload_redhat_developer_hub_vault_token }}
 
-#---
+#####
 # this is already being done during Vault initialization though Helm Chart (values.extraContainers)
-#---
+#####
 # - name: Create vault policy
 #   ansible.builtin.shell: |
 #     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
