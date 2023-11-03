@@ -4,5 +4,5 @@ kind: Kustomization
 namespace: vault-admin
 resources:
   - ./namespace.yaml
-  - ./kube-auth-engine-config.yaml
-  - ./kube-auth-engine-mount.yaml
+  # - ./kube-auth-engine-config.yaml
+  # - ./kube-auth-engine-mount.yaml

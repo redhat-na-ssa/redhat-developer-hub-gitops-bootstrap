@@ -2,6 +2,9 @@
   hosts: localhost
   gather_facts: false
   vars:
+    setup_rhsso: false
+    rhdh_instance_name: "janusidp"
+    git_system: "github"
     gitlab_instance_name: "gitlab"
     gitlab_root_secret_name: "{{ gitlab_instance_name }}-gitlab-initial-root-password"
     ocp4_workload_redhat_developer_hub_gitlab_namespace: "gitlab-system"
@@ -65,10 +68,7 @@
     - name: Setup Gitlab dependencies
       ansible.builtin.include_tasks:
         file: ./setup_gitlab.yml
-
-    - name: Setup RHSSO dependencies
-      ansible.builtin.include_tasks:
-        file: ./setup_rhsso.yml
+      when: git_system == "gitlab"
 
     # - name: Setup Gitlab repo dependencies
     #   include_tasks:
@@ -76,3 +76,9 @@
     #   loop: "{{ ocp4_workload_redhat_developer_hub_gitlab_template_locations }}"
     #   loop_control:
     #     loop_var: location
+    
+    - name: Setup RHSSO dependencies
+      ansible.builtin.include_tasks:
+        file: ./setup_rhsso.yml
+      when: setup_rhsso is true
+
