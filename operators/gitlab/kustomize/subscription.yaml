@@ -13,4 +13,4 @@ spec:
   source: certified-operators
   sourceNamespace: openshift-marketplace
   # startingCSV: gitlab-operator-kubernetes.v0.19.0
-  # startingCSV: gitlab-operator-kubernetes.v0.24.1
+  startingCSV: gitlab-operator-kubernetes.v0.25.1
