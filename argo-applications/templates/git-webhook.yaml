@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: gitlab
+  name: git-webhook
   namespace: openshift-gitops
   labels:
     {{- include "argo-applications.labels" . | nindent 4 }} 
@@ -14,10 +14,10 @@ spec:
   source:
     repoURL: {{ .Values.gitRepo.URL }}
     targetRevision: {{ .Values.gitRepo.targetRevision }}
-    path: operators/gitlab/kustomize
+    path: operators/git-webhook/kustomize
   destination:
     server: https://kubernetes.default.svc
-    namespace: gitlab-system
+    namespace: gitwebhook-operator
   syncPolicy:
     automated:
       prune: true
