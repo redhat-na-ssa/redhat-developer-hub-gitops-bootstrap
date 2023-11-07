@@ -84,9 +84,21 @@
 #     --output 'go-template={{ "{{" }} .data.token {{ "}}" }}' | base64 --decode)
 #     oc exec vault-0 -c vault -n vault -- vault write -address https://vault.vault.svc:8200 auth/kubernetes/login role=rhdh-role jwt=$SA_JWT_TOKEN
 
-- name: Enable kv version 2
+# enable vault-plugin-secrets-github
+# vault secrets enable -path=github -plugin-name=vault-plugin-secrets-github plugin
+# Write the configuration
+# vault write /github/config app_id=<app_id> prv_key=@<private_key_file>
+
+# enable vault-plugin-secrets-quay
+# vault secrets enable -path=quay -plugin-name=vault-plugin-secrets-quay plugin
+# Write the configuration
+# vault write quay/config \
+#  url=https://quay.io \
+#  token= #Quay OAuth App token (with 'Administer Organization' grant!!!)
+
+- name: Enable kv version 1
   ansible.builtin.shell: |
-    oc exec vault-0 -c vault -n vault -- vault secrets enable -address https://vault.vault.svc:8200 -version=2 kv
+    oc exec vault-0 -c vault -n vault -- vault secrets enable -address https://vault.vault.svc:8200 -version=1 -path=kv kv
   ignore_errors: true #in case it already created
 
 # Not needed yet for this demo
@@ -106,16 +118,18 @@
     github_application_id: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_ID') }}"
 
 - name: Populate Vault with Github Secrets
-  community.hashi_vault.vault_kv2_write:
-  # community.hashi_vault.vault_write:
+  # community.hashi_vault.vault_kv2_write:
+  community.hashi_vault.vault_write:
     url: "https://vault-vault.{{ ocp4_workload_redhat_developer_hub_apps_domain }}"
-    engine_mount_point: kv
-    path: secrets/{{ rhdh_instance_name }}/github-plugin
+    # engine_mount_point: kv
+    path: kv/secrets/{{ rhdh_instance_name }}/github-plugin
     validate_certs: false
     data:
       app_id: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_ID') }}"
       org: "{{ lookup('ansible.builtin.env', 'GITHUB_ORGANIZATION') }}"
-      private_key: "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'GITHUB_KEY_FILE')) }}"
+      # 'key' is required by the vault-config-operator
+      key: "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'GITHUB_KEY_FILE')) }}"
+      # private_key: "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'GITHUB_KEY_FILE')) }}"
     token: "{{ ocp4_workload_redhat_developer_hub_vault_token }}"
 
 - name: Concatenate Registry Credentials
@@ -127,11 +141,11 @@
     encoded_registry_credentials: "{{ registry_credentials | b64encode }}"
 
 - name: Populate Vault with Registry Credentials
-  community.hashi_vault.vault_kv2_write:
-  # community.hashi_vault.vault_write:
+  # community.hashi_vault.vault_kv2_write:
+  community.hashi_vault.vault_write:
     url: "https://vault-vault.{{ ocp4_workload_redhat_developer_hub_apps_domain }}"
-    engine_mount_point: kv
-    path: secrets/{{ rhdh_instance_name }}/registry
+    # engine_mount_point: kv
+    path: kv/secrets/{{ rhdh_instance_name }}/registry-plugin
     validate_certs: false
     data:
       credentials: "{{ encoded_registry_credentials }}"

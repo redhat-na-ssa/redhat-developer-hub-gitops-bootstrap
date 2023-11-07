@@ -4,7 +4,7 @@ metadata:
   name: gitlab-operator-kubernetes
   namespace: gitlab-system
   annotations:
-    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-weight": "-1"
 spec:
   channel: stable
   installPlanApproval: Automatic
