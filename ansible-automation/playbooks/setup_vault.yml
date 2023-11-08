@@ -96,16 +96,18 @@
 #  url=https://quay.io \
 #  token= #Quay OAuth App token (with 'Administer Organization' grant!!!)
 
-- name: Enable kv version 1
+- name: Enable Secret engines for kv, github and quay
   ansible.builtin.shell: |
     oc exec vault-0 -c vault -n vault -- vault secrets enable -address https://vault.vault.svc:8200 -version=1 -path=kv kv
+    oc exec vault-0 -c vault -n vault -- vault secrets enable -address https://vault.vault.svc:8200 -path=github vault-plugin-secrets-github
+    oc exec vault-0 -c vault -n vault -- vault secrets enable -address https://vault.vault.svc:8200 -path=quay vault-plugin-secrets-quay
   ignore_errors: true #in case it already created
 
 # Not needed yet for this demo
 # - name: Populate Vault with Dev Spaces Secrets
 #   community.hashi_vault.vault_write:
 #     url: "https://vault-vault.{{ ocp4_workload_redhat_developer_hub_apps_domain }}"
-#     path: kv/secrets/{{ rhdh_instance_name }}/dev-spaces
+#     path: kv/secrets/{{ idp_instance_name }}/dev-spaces
 #     validate_certs: false
 #     data:
 #       id: "{{ lookup('ansible.builtin.env', 'GITHUB_DEV_SPACES_CLIENT_ID') }}"
@@ -122,7 +124,7 @@
   community.hashi_vault.vault_write:
     url: "https://vault-vault.{{ ocp4_workload_redhat_developer_hub_apps_domain }}"
     # engine_mount_point: kv
-    path: kv/secrets/{{ rhdh_instance_name }}/github-plugin
+    path: kv/secrets/{{ idp_instance_name }}/github-plugin
     validate_certs: false
     data:
       app_id: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_ID') }}"
@@ -134,7 +136,7 @@
 
 - name: Concatenate Registry Credentials
   ansible.builtin.set_fact:
-    registry_credentials: "{{ lookup('ansible.builtin.env', 'JANUS_QUAY_USER') }}:{{ lookup('ansible.builtin.env', 'JANUS_QUAY_TOKEN') }}"
+    registry_credentials: "{{ lookup('ansible.builtin.env', 'QUAY_USER') }}:{{ lookup('ansible.builtin.env', 'QUAY_TOKEN') }}"
 
 - name: Encode Registry Credentials
   ansible.builtin.set_fact:
@@ -145,10 +147,22 @@
   community.hashi_vault.vault_write:
     url: "https://vault-vault.{{ ocp4_workload_redhat_developer_hub_apps_domain }}"
     # engine_mount_point: kv
-    path: kv/secrets/{{ rhdh_instance_name }}/registry-plugin
+    path: kv/secrets/{{ idp_instance_name }}/registry-plugin
     validate_certs: false
     data:
       credentials: "{{ encoded_registry_credentials }}"
-      user: "{{ lookup('ansible.builtin.env', 'JANUS_QUAY_USER') }}"
-      token: "{{ lookup('ansible.builtin.env', 'JANUS_QUAY_TOKEN') }}"
+      username: "{{ lookup('ansible.builtin.env', 'QUAY_USER') }}"
+      password: "{{ lookup('ansible.builtin.env', 'QUAY_TOKEN') }}"
     token: "{{ ocp4_workload_redhat_developer_hub_vault_token }}"
+
+# - name: Write Quay Config on Quay Vault Plugin Secret
+#   ansible.builtin.shell: |
+#     oc exec vault-0 -c vault -n vault -- vault write -address https://vault.vault.svc:8200 quay/config url={{ quay_registry_server_url }} token={{ lookup('ansible.builtin.env', 'QUAY_TOKEN') }}
+
+- name: Create GitSecretEngine Config
+  k8s:
+    state: present
+    definition: "{{ lookup('template', item) | from_yaml }}"
+  loop:
+    - vault-git-secret-engine-config.yml.j2
+    - vault-quay-secret-engine-config.yml.j2

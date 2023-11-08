@@ -3,10 +3,12 @@
   gather_facts: false
   vars:
     setup_rhsso: false
-    rhdh_instance_name: "janusidp"
+    idp_instance_name: "rhdh"
     git_system: "github"
     gitlab_instance_name: "gitlab"
+    github_application_id: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_ID') }}"
     gitlab_root_secret_name: "{{ gitlab_instance_name }}-gitlab-initial-root-password"
+    quay_registry_server_url: "https://quay.io"
     ocp4_workload_redhat_developer_hub_gitlab_namespace: "gitlab-system"
     ocp4_workload_redhat_developer_hub_vault_namespace: "vault"
     ocp4_workload_redhat_developer_hub_backstage_namespace: "rhdh"
@@ -15,10 +17,6 @@
     ocp4_workload_redhat_developer_hub_backstage_gitops_repo: "https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git"
 
   tasks:
-    - name: Setting up workload
-      ansible.builtin.debug:
-        msg: "Setting up GitLab"
-
     - name: Retrieve Ingress config
       kubernetes.core.k8s_info:
         api_version: config.openshift.io/v1
@@ -76,9 +74,8 @@
     #   loop: "{{ ocp4_workload_redhat_developer_hub_gitlab_template_locations }}"
     #   loop_control:
     #     loop_var: location
-    
+
     - name: Setup RHSSO dependencies
       ansible.builtin.include_tasks:
         file: ./setup_rhsso.yml
       when: setup_rhsso is true
-
