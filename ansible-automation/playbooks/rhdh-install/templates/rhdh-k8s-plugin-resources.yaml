@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rhdh-k8s-plugin
+  namespace: "{{ idp_namespace }}"
+---
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/service-account-token
+metadata:
+  name: rhdh-k8s-plugin-secret-token
+  namespace: "{{ idp_namespace }}"
+  annotations:
+    kubernetes.io/service-account.name: rhdh-k8s-plugin
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1 
+metadata:
+  name: rhdh-k8s-plugin
+rules:
+  - verbs: 
+      - get
+      - watch
+      - list 
+    apiGroups:
+      - '' 
+    resources:
+      - pods
+      - pods/log
+      - services
+      - configmaps 
+      - limitranges
+  - verbs: 
+      - get
+      - watch
+      - list 
+    apiGroups:
+      - metrics.k8s.io 
+    resources:
+      - pods 
+  - verbs:
+      - get
+      - watch 
+      - list
+    apiGroups: 
+      - apps
+    resources:
+      - daemonsets
+      - deployments 
+      - replicasets 
+      - statefulsets
+  - verbs: 
+      - get
+      - watch
+      - list 
+    apiGroups:
+      - autoscaling 
+    resources:
+      - horizontalpodautoscalers 
+  - verbs:
+      - get
+      - watch 
+      - list
+    apiGroups:
+      - networking.k8s.io
+    resources: 
+      - ingresses
+  - verbs: 
+      - get
+      - watch 
+      - list
+    apiGroups: 
+      - batch
+    resources: 
+      - jobs
+      - cronjobs
+  - verbs: 
+      - get
+      - list 
+    apiGroups:
+      - tekton.dev 
+    resources:
+      - pipelines
+      - pipelineruns 
+      - taskruns
+  - verbs:
+      - get
+      - list
+    apiGroups:
+      - route.openshift.io
+    resources:
+      - routes
+  - verbs:
+      - get
+      - list
+    apiGroups:
+      - org.eclipse.che
+    resources:
+      - checlusters
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rhdh-k8s-plugin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rhdh-k8s-plugin
+subjects:
+  - kind: ServiceAccount
+    name: rhdh-k8s-plugin
+    namespace: "{{ idp_namespace }}"

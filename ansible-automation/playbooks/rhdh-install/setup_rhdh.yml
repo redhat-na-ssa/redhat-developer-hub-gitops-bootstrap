@@ -1,0 +1,120 @@
+---
+- name: Load Components' Secrets
+  ansible.builtin.set_fact:
+    github_app_app_id: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_APP_ID') }}"
+    github_app_client_id: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_CLIENT_ID') }}"
+    github_app_client_secret: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_CLIENT_SECRET') }}"
+    github_app_private_key: "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'GITHUB_APP_PRIVATE_KEY_FILE')) }}"
+    github_app_webhook_url: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_WEBHOOK_URL') }}"
+    github_app_webhook_secret: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_WEBHOOK_SECRET') }}"
+    github_org_url: "{{ lookup('ansible.builtin.env', 'GITHUB_ORG_URL') }}"
+    quay_token: "{{ lookup('ansible.builtin.env', 'QUAY_TOKEN') }}"
+
+- name: Ensure all the env var are set
+  ansible.builtin.fail:
+    msg: One or more required env vars are not set. Make sure you source your env.sh file!
+  when: >
+    (github_app_app_id == "") or
+    (github_app_client_id == "") or
+    (github_app_client_secret == "") or
+    (github_app_private_key == "") or
+    (github_app_webhook_url == "") or
+    (github_app_webhook_secret == "") or
+    (github_org_url == "") or
+    (quay_token == "")
+
+- name: Create a secret for the Github plugin
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'rhdh-github-plugin-secret.yaml') | from_yaml }}"
+
+- name: Create resources for the Kubernetes plugin
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: "rhdh-k8s-plugin-resources.yaml"
+
+- name: Get the k8s plugin token
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: "rhdh-k8s-plugin-secret-token"
+    namespace: "{{ idp_namespace }}"
+  register: k8s_secret
+
+- name: Extract k8s plugin secret token
+  ansible.builtin.set_fact:
+    k8s_plugin_sa_token: "{{ k8s_secret.resources[0].data.token | b64decode }}"
+
+- name: Create secret for the Kubernetes plugin
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: "rhdh-k8s-plugin-secret.yaml"
+
+- name: Get ArgoCD instance info
+  kubernetes.core.k8s_info:
+    api_version: argoproj.io/v1beta1
+    kind: ArgoCD
+    name: "{{ argocd_instance_name }}"
+    namespace: "{{ argocd_namespace }}"
+  register: argocd_instance
+
+- name: Get ArgoCD instance info
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: "{{ argocd_instance_name }}-cluster"
+    namespace: "{{ argocd_namespace }}"
+  register: argocd_secret
+
+- name: Extract ArgoCD admin token
+  ansible.builtin.set_fact:
+    argocd_route_url: 'https://{{ argocd_instance.resources[0].status.host }}'
+    argocd_admin_username: 'admin'
+    argocd_admin_password: '{{ argocd_secret.resources[0].data["admin.password"] | b64decode }}'
+
+- name: Create secret for the ArgoCD plugin
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: "rhdh-argocd-plugin-secret.yaml"
+
+- name: Create secret for the Quay Registry plugin
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: "rhdh-quay-plugin-secret.yaml"
+
+- name: Create the RHDH app ConfigMap
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'rhdh-app-config.yaml') | from_yaml }}"
+
+- name: Install Helm Diff
+  kubernetes.core.helm_plugin:
+    plugin_path: "https://github.com/databus23/helm-diff"
+    state: present
+
+- name: Add Openshift chart repo
+  kubernetes.core.helm_repository:
+    name: openshift
+    repo_url: "https://charts.openshift.io"
+
+- name: Deploy RHDH chart on 0.2.0 with values loaded from template
+  kubernetes.core.helm:
+    name: developer-hub
+    chart_ref: openshift/redhat-developer-hub
+    chart_version: "{{ rhdh_helm_chart_version }}"
+    release_namespace: "{{ idp_namespace }}"
+    # force: true
+    wait: true
+    # replace: true
+    purge: false
+    # update_repo_cache: true
+    # disable_hook: true
+    values: "{{ lookup('template', 'rhdh-helm-values.yaml') | from_yaml }}"
+    # set_values:
+    #   - value: global.foo="bar"
+    #     value_type: string
+

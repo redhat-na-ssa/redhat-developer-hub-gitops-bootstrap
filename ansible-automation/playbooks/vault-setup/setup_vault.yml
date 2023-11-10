@@ -19,7 +19,7 @@
 
 - name: Decode vault init root token
   ansible.builtin.set_fact:
-    ocp4_workload_redhat_developer_hub_vault_token: "{{ r_root_token.resources[0].data.root_token | b64decode }}"
+    vault_token: "{{ r_root_token.resources[0].data.root_token | b64decode }}"
 
 - name: Create vault auth resources
   k8s:
@@ -32,23 +32,23 @@
 
 - name: Login to vault
   ansible.builtin.shell: |
-    oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
-      }} -- vault login -tls-skip-verify {{ ocp4_workload_redhat_developer_hub_vault_token }}
+    oc exec vault-0 -c vault -n {{ vault_namespace
+      }} -- vault login -tls-skip-verify {{ vault_token }}
 
 #####
 # this is already being done during Vault initialization though Helm Chart (values.extraContainers)
 #####
 # - name: Create vault policy
 #   ansible.builtin.shell: |
-#     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
+#     oc exec vault-0 -c vault -n {{ vault_namespace
 #       }} -- bash -c 'rm -rf /tmp/rhdh-policy.hcl'
-#     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
+#     oc exec vault-0 -c vault -n {{ vault_namespace
 #       }} -- bash -c 'echo path \"*\" >> /tmp/rhdh-policy.hcl'
-#     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
+#     oc exec vault-0 -c vault -n {{ vault_namespace
 #       }} -- bash -c 'echo {  capabilities = [\"read\", \"list\"] >> /tmp/rhdh-policy.hcl'
-#     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
+#     oc exec vault-0 -c vault -n {{ vault_namespace
 #       }} -- bash -c 'echo } >> /tmp/rhdh-policy.hcl'
-#     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
+#     oc exec vault-0 -c vault -n {{ vault_namespace
 #       }} -- bash -c 'vault policy write -address https://vault.vault.svc:8200 rhdh-policy /tmp/rhdh-policy.hcl'
 
 # - name: Enable kubernetes auth
@@ -61,9 +61,9 @@
 #     --output 'jsonpath={.clusters[].cluster.certificate-authority-data}' | base64 --decode)
 #     export K8S_HOST=$(oc config view --raw --minify --flatten \
 #     --output 'jsonpath={.clusters[].cluster.server}')
-#     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
+#     oc exec vault-0 -c vault -n {{ vault_namespace
 #       }} -- vault auth enable -address https://vault.vault.svc:8200 kubernetes
-#     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
+#     oc exec vault-0 -c vault -n {{ vault_namespace
 #       }} -- vault write -address https://vault.vault.svc:8200 auth/kubernetes/config \
 #     token_reviewer_jwt="$SA_JWT_TOKEN" \
 #     kubernetes_host="$K8S_HOST" \
@@ -72,7 +72,7 @@
 
 # - name: Create role and service account authentication
 #   ansible.builtin.shell: |
-#     oc exec vault-0 -c vault -n {{ ocp4_workload_redhat_developer_hub_vault_namespace
+#     oc exec vault-0 -c vault -n {{ vault_namespace
 #       }} -- vault write -address https://vault.vault.svc:8200 auth/kubernetes/role/rhdh-role \
 #     bound_service_account_names=vault-auth \
 #     bound_service_account_namespaces=default \
@@ -106,33 +106,33 @@
 # Not needed yet for this demo
 # - name: Populate Vault with Dev Spaces Secrets
 #   community.hashi_vault.vault_write:
-#     url: "https://vault-vault.{{ ocp4_workload_redhat_developer_hub_apps_domain }}"
+#     url: "https://vault-vault.{{ apps_cluster_domain }}"
 #     path: kv/secrets/{{ idp_instance_name }}/dev-spaces
 #     validate_certs: false
 #     data:
 #       id: "{{ lookup('ansible.builtin.env', 'GITHUB_DEV_SPACES_CLIENT_ID') }}"
 #       secret: "{{ lookup('ansible.builtin.env', 'GITHUB_DEV_SPACES_CLIENT_SECRET') }}"
-#     token: "{{ ocp4_workload_redhat_developer_hub_vault_token }}"
+#     token: "{{ vault_token }}"
 #   register: vault_status
 
 - name: Get GitHub AppId
   ansible.builtin.set_fact:
-    github_application_id: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_ID') }}"
+    github_application_id: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_APP_ID') }}"
 
 - name: Populate Vault with Github Secrets
   # community.hashi_vault.vault_kv2_write:
   community.hashi_vault.vault_write:
-    url: "https://vault-vault.{{ ocp4_workload_redhat_developer_hub_apps_domain }}"
+    url: "https://vault-vault.{{ apps_cluster_domain }}"
     # engine_mount_point: kv
     path: kv/secrets/{{ idp_instance_name }}/github-plugin
     validate_certs: false
     data:
-      app_id: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_ID') }}"
+      app_id: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_APP_ID') }}"
       org: "{{ lookup('ansible.builtin.env', 'GITHUB_ORGANIZATION') }}"
       # 'key' is required by the vault-config-operator
-      key: "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'GITHUB_KEY_FILE')) }}"
+      key: "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'GITHUB_APP_PRIVATE_KEY_FILE')) }}"
       # private_key: "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'GITHUB_KEY_FILE')) }}"
-    token: "{{ ocp4_workload_redhat_developer_hub_vault_token }}"
+    token: "{{ vault_token }}"
 
 - name: Concatenate Registry Credentials
   ansible.builtin.set_fact:
@@ -145,7 +145,7 @@
 - name: Populate Vault with Registry Credentials
   # community.hashi_vault.vault_kv2_write:
   community.hashi_vault.vault_write:
-    url: "https://vault-vault.{{ ocp4_workload_redhat_developer_hub_apps_domain }}"
+    url: "https://vault-vault.{{ apps_cluster_domain }}"
     # engine_mount_point: kv
     path: kv/secrets/{{ idp_instance_name }}/registry-plugin
     validate_certs: false
@@ -153,7 +153,7 @@
       credentials: "{{ encoded_registry_credentials }}"
       username: "{{ lookup('ansible.builtin.env', 'QUAY_USER') }}"
       password: "{{ lookup('ansible.builtin.env', 'QUAY_TOKEN') }}"
-    token: "{{ ocp4_workload_redhat_developer_hub_vault_token }}"
+    token: "{{ vault_token }}"
 
 # - name: Write Quay Config on Quay Vault Plugin Secret
 #   ansible.builtin.shell: |

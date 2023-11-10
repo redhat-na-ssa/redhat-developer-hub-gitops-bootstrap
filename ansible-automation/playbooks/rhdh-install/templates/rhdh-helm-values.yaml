@@ -1,0 +1,98 @@
+global:
+  clusterRouterBase: '{{ apps_cluster_domain }}'
+route:
+  annotations: {}
+  enabled: true
+  host: '{{ "{{" }} .Values.global.host {{ "}}" }}'
+  path: /
+  tls:
+    caCertificate: ''
+    certificate: ''
+    destinationCACertificate: ''
+    enabled: true
+    insecureEdgeTerminationPolicy: Redirect
+    key: ''
+    termination: edge
+  wildcardPolicy: None
+upstream:
+  backstage:
+    appConfig:
+      app:
+        baseUrl: 'https://{{ "{{" }}- include "janus-idp.hostname" . {{ "}}" }}'
+      backend:
+        baseUrl: 'https://{{ "{{" }}- include "janus-idp.hostname" . {{ "}}" }}'
+        cors:
+          origin: 'https://{{ "{{" }}- include "janus-idp.hostname" . {{ "}}" }}'
+        database:
+          connection:
+            password: '${POSTGRESQL_ADMIN_PASSWORD}'
+            user: postgres
+    command: []
+    extraEnvVars:
+      - name: POSTGRESQL_ADMIN_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: postgres-password
+            name: '{{ "{{" }} .Release.Name {{ "}}" }}-postgresql'
+    image:
+      pullSecrets:
+        - rhdh-pull-secret
+      registry: quay.io
+      repository: rhdh/rhdh-hub-rhel9
+      tag: 1.0-88
+    extraAppConfig:
+      - configMapRef: app-config-rhdh
+        filename: app-config-rhdh.yaml
+    extraEnvVarsSecrets:
+      - rhdh-github-secret
+      - rhdh-k8s-plugin-secret
+      - rhdh-argocd-plugin-secret
+      - rhdh-quay-plugin-secret
+
+  ingress:
+    enabled: false
+    host: '{{ "{{" }} .Values.global.host {{ "}}" }}'
+    tls:
+      enabled: false
+  nameOverride: developer-hub
+  networkPolicy:
+    enabled: false
+  postgresql:
+    auth:
+      secretKeys:
+        adminPasswordKey: postgres-password
+        userPasswordKey: password
+    enabled: true
+    image:
+      registry: registry.redhat.io
+      repository: rhel9/postgresql-15
+      tag: latest
+    postgresqlDataDir: /var/lib/pgsql/data/userdata
+    primary:
+      containerSecurityContext:
+        enabled: false
+      extraEnvVars:
+        - name: POSTGRESQL_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: postgres-password
+              name: '{{ "{{" }} .Release.Name {{ "}}" }}-postgresql'
+      persistence:
+        enabled: true
+        mountPath: /var/lib/pgsql/data
+        size: 1Gi
+      podSecurityContext:
+        enabled: false
+      securityContext:
+        enabled: false
+  service:
+    externalTrafficPolicy: Cluster
+    ports:
+      backend: 7007
+      name: http-backend
+      targetPort: backend
+    sessionAffinity: None
+    type: ClusterIP
+  serviceAccount:
+    automountServiceAccountToken: true
+    create: false

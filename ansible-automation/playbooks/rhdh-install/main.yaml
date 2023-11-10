@@ -1,0 +1,76 @@
+- name: DevHub infra setup
+  hosts: localhost
+  gather_facts: false
+  vars:
+    setup_rhsso: false
+    idp_namespace: "rhdh"
+    idp_instance_name: "rhdh"
+    rhdh_helm_chart_version: "0.2.0"
+    git_system: "github"
+    gitlab_instance_name: "gitlab"
+    github_host: "github.com"
+    github_application_id: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_APP_ID') }}"
+    gitlab_root_secret_name: "{{ gitlab_instance_name }}-gitlab-initial-root-password"
+    gitlab_namespace: "gitlab-system"
+    gitlab_host: ""
+    argocd_instance_name: "openshift-gitops"
+    argocd_namespace: "openshift-gitops"
+    quay_registry_server_url: "https://quay.io"
+    vault_namespace: "vault"
+    keycloak_host: ""
+    backstage_gitops_repo: "https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git"
+
+  tasks:
+    - name: Retrieve Ingress config
+      kubernetes.core.k8s_info:
+        api_version: config.openshift.io/v1
+        kind: Ingress
+        name: cluster
+      register: r_ingress_config
+
+    - name: Retrieve Ingress config
+      kubernetes.core.k8s_info:
+        api_version: config.openshift.io/v1
+        kind: Infrastructure
+        name: cluster
+      register: r_infra_config
+
+    - name: Set OpenShift Cluster Domain and API URLs
+      ansible.builtin.set_fact:
+        apps_cluster_domain: "{{ r_ingress_config.resources[0].spec.domain }}"
+        cluster_api_url: "{{ r_infra_config.resources[0].status.apiServerURL }}"
+
+    - name: Set OpenShift Apps URLs
+      ansible.builtin.set_fact:
+        gitlab_host: "gitlab.gitlab-{{
+          gitlab_namespace }}.{{
+          apps_cluster_domain }}"
+        keycloak_host: "keycloak-{{
+          idp_namespace }}.{{
+          apps_cluster_domain }}"
+        backstage_host: "backstage-{{
+          idp_namespace }}.{{
+          apps_cluster_domain }}"
+        devspaces_host: "devspaces.{{
+          apps_cluster_domain }}"
+        openshift_redirect_host: "oauth-openshift.{{
+          apps_cluster_domain }}"
+        openshift_console_host: console-openshift-console.{{
+          apps_cluster_domain }}
+        quay_host: "quay.io"
+
+    - name: Debug vars
+      ansible.builtin.debug:
+        msg:
+          - "apps_cluster_domain: {{ apps_cluster_domain }}"
+          - "gitlab_host: {{ gitlab_host }}"
+          - "keycloak_host: {{ keycloak_host }}"
+          - "backstage_host: {{ backstage_host }}"
+          - "devspaces_host: {{ devspaces_host }}"
+          - "openshift_redirect_host: {{ openshift_redirect_host }}"
+          - "openshift_console_host: {{ openshift_console_host }}"
+          - "quay_host: {{ quay_host }}"
+
+    - name: Setup RHDH
+      ansible.builtin.include_tasks:
+        file: ./setup_rhdh.yml
