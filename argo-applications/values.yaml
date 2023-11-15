@@ -4,6 +4,8 @@ gitRepo:
 baseDomain: dummy
 git:
   organization: redhat-na-ssa
+gitlab:
+  install: false
 helm:
   charts:
     gitlab:

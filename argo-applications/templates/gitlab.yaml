@@ -1,3 +1,4 @@
+{{- if .Values.gitlab.install }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -41,4 +42,4 @@ spec:
     # namespace: gitlab-system
     jsonPointers:
     - /spec/chart/values/global/hosts/domain
-
+{{- end}}

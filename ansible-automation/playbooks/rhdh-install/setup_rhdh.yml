@@ -98,13 +98,13 @@
 
 - name: Add Openshift chart repo
   kubernetes.core.helm_repository:
-    name: openshift
+    name: openshift-helm-charts
     repo_url: "https://charts.openshift.io"
 
 - name: Deploy RHDH chart on 0.2.0 with values loaded from template
   kubernetes.core.helm:
     name: developer-hub
-    chart_ref: openshift/redhat-developer-hub
+    chart_ref: openshift-helm-charts/redhat-developer-hub
     chart_version: "{{ rhdh_helm_chart_version }}"
     release_namespace: "{{ idp_namespace }}"
     # force: true
