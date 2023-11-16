@@ -39,7 +39,7 @@ upstream:
         - rhdh-pull-secret
       registry: quay.io
       repository: rhdh/rhdh-hub-rhel9
-      tag: 1.0-88
+      tag: '1.0'
     extraAppConfig:
       - configMapRef: app-config-rhdh
         filename: app-config-rhdh.yaml

@@ -9,6 +9,7 @@
     github_app_webhook_secret: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_WEBHOOK_SECRET') }}"
     github_org_url: "{{ lookup('ansible.builtin.env', 'GITHUB_ORG_URL') }}"
     quay_token: "{{ lookup('ansible.builtin.env', 'QUAY_TOKEN') }}"
+    rhdh_quay_pull_secret: "{{ lookup('ansible.builtin.env', 'RHDH_REGISTRY_PULL_SECRET') }}"
 
 - name: Ensure all the env var are set
   ansible.builtin.fail:
@@ -21,7 +22,18 @@
     (github_app_webhook_url == "") or
     (github_app_webhook_secret == "") or
     (github_org_url == "") or
-    (quay_token == "")
+    (quay_token == "") or
+    (rhdh_quay_pull_secret == "")
+
+- name: Create the idp namespace
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'rhdh-namespace.yaml') | from_yaml }}"
+
+- name: Create the rhdh pull secret #required before GA
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'rhdh-pull-secret.yaml') | from_yaml }}"
 
 - name: Create a secret for the Github plugin
   kubernetes.core.k8s:
@@ -91,30 +103,42 @@
     state: present
     definition: "{{ lookup('template', 'rhdh-app-config.yaml') | from_yaml }}"
 
-- name: Install Helm Diff
-  kubernetes.core.helm_plugin:
-    plugin_path: "https://github.com/databus23/helm-diff"
-    state: present
+# - name: Install Helm Diff
+#   kubernetes.core.helm_plugin:
+#     plugin_path: "https://github.com/databus23/helm-diff"
+#     state: present
 
 - name: Add Openshift chart repo
   kubernetes.core.helm_repository:
     name: openshift-helm-charts
     repo_url: "https://charts.openshift.io"
 
+- name: Render RHDH Helmchart values template 
+  ansible.builtin.template: src=templates/rhdh-helm-values.yaml dest="/tmp/rhdh-helm-values.yaml"
+
 - name: Deploy RHDH chart on 0.2.0 with values loaded from template
-  kubernetes.core.helm:
-    name: developer-hub
-    chart_ref: openshift-helm-charts/redhat-developer-hub
-    chart_version: "{{ rhdh_helm_chart_version }}"
-    release_namespace: "{{ idp_namespace }}"
-    # force: true
-    wait: true
-    # replace: true
-    purge: false
-    # update_repo_cache: true
-    # disable_hook: true
-    values: "{{ lookup('template', 'rhdh-helm-values.yaml') | from_yaml }}"
-    # set_values:
-    #   - value: global.foo="bar"
-    #     value_type: string
+  ansible.builtin.shell: |
+    helm upgrade -i developer-hub \
+      -f "/tmp/rhdh-helm-values.yaml" \
+      openshift-helm-charts/redhat-developer-hub \
+      --namespace "{{ idp_namespace }}"
+
+# - name: Deploy RHDH chart on 0.2.0 with values loaded from template
+#   kubernetes.core.helm:
+#     name: developer-hub
+#     chart_ref: openshift-helm-charts/redhat-developer-hub
+#     chart_version: "{{ rhdh_helm_chart_version }}"
+#     release_namespace: "{{ idp_namespace }}"
+#     validate_certs: false
+#     atomic: true
+#     wait: true
+#     purge: false
+#     # force: true
+#     # replace: true
+#     # update_repo_cache: true
+#     # disable_hook: true
+#     # set_values:
+#     #   - value: global.foo="bar"
+#     #     value_type: string
+#     values: "{{ lookup('template', 'rhdh-helm-values.yaml') | from_yaml }}"
 
