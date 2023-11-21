@@ -64,15 +64,15 @@
     template:
       path: "rhdh-k8s-plugin-secret.yaml"
 
-- name: Get ArgoCD instance info
+- name: Get ArgoCD instance route info
   kubernetes.core.k8s_info:
-    api_version: argoproj.io/v1beta1
-    kind: ArgoCD
-    name: "{{ argocd_instance_name }}"
+    api_version: route.openshift.io/v1
+    kind: Route
+    name: "{{ argocd_instance_name }}-server"
     namespace: "{{ argocd_namespace }}"
-  register: argocd_instance
+  register: argocd_instance_route
 
-- name: Get ArgoCD instance info
+- name: Get ArgoCD Secret
   kubernetes.core.k8s_info:
     api_version: v1
     kind: Secret
@@ -82,7 +82,7 @@
 
 - name: Extract ArgoCD admin token
   ansible.builtin.set_fact:
-    argocd_route_url: 'https://{{ argocd_instance.resources[0].status.host }}'
+    argocd_route_url: 'https://{{ argocd_instance_route.resources[0].spec.host }}'
     argocd_admin_username: 'admin'
     argocd_admin_password: '{{ argocd_secret.resources[0].data["admin.password"] | b64decode }}'
 
@@ -114,14 +114,17 @@
     repo_url: "https://charts.openshift.io"
 
 - name: Render RHDH Helmchart values template 
-  ansible.builtin.template: src=templates/rhdh-helm-values.yaml dest="/tmp/rhdh-helm-values.yaml"
+  ansible.builtin.template: src="templates/{{ rhdh_helm_values_file }}" dest="/tmp/{{ rhdh_helm_values_file }}"
 
-- name: Deploy RHDH chart on 0.2.0 with values loaded from template
+- name: Deploy RHDH Helm Chart with values loaded from template
   ansible.builtin.shell: |
-    helm upgrade -i developer-hub \
-      -f "/tmp/rhdh-helm-values.yaml" \
-      openshift-helm-charts/redhat-developer-hub \
-      --namespace "{{ idp_namespace }}"
+    # helm upgrade -i developer-hub \
+    #   -f "/tmp/{{ rhdh_helm_values_file }}" \
+    #   openshift-helm-charts/redhat-developer-hub \
+    #   --namespace "{{ idp_namespace }}"
+    helm install -n "{{ idp_namespace }}" \
+    -f "/tmp/{{ rhdh_helm_values_file }}" \
+    developer-hub https://github.com/rhdh-bot/openshift-helm-charts/raw/developer-hub-1.0-163-CI/charts/redhat/redhat/developer-hub/1.0-163-CI/developer-hub-1.0-163-CI.tgz
 
 # - name: Deploy RHDH chart on 0.2.0 with values loaded from template
 #   kubernetes.core.helm:

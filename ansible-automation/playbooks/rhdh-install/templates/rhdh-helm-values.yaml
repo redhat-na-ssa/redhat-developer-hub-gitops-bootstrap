@@ -39,12 +39,12 @@ upstream:
         - rhdh-pull-secret
       registry: quay.io
       repository: rhdh/rhdh-hub-rhel9
-      tag: '1.0'
+      tag: '{{ rhdh_image_version }}'
     extraAppConfig:
       - configMapRef: app-config-rhdh
         filename: app-config-rhdh.yaml
     extraEnvVarsSecrets:
-      - rhdh-github-secret
+      - rhdh-github-plugin-secret
       - rhdh-k8s-plugin-secret
       - rhdh-argocd-plugin-secret
       - rhdh-quay-plugin-secret
