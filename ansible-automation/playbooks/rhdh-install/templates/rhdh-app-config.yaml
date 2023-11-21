@@ -41,7 +41,17 @@ data:
         githubOrg:
           default:
             id: development
-            orgUrl: ${GITHUB_ORG_URL}        
+            orgUrl: ${GITHUB_ORG_URL}
+        github:
+          providerId:
+            organization: "${GITHUB_ORG}"
+            schedule:
+              frequency:
+                minutes: 10
+              timeout: 
+                minutes: 1
+              initialDelay:
+                seconds: 15
 
     kubernetes:
       clusterLocatorMethods:
@@ -91,9 +101,9 @@ data:
     #         # supports ISO duration, "human duration" as used in code
     #         timeout: { seconds: 60 }
 
-    enabled:
-      github: true
-      githubOrg: true
-      kubernetes: true
-      argocd: true
-      # ocm: true
+    # enabled:
+    #   github: true
+    #   githubOrg: true
+    #   kubernetes: true
+    #   argocd: true
+    #   # ocm: true

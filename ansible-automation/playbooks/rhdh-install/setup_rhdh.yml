@@ -7,6 +7,7 @@
     github_app_private_key: "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'GITHUB_APP_PRIVATE_KEY_FILE')) }}"
     github_app_webhook_url: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_WEBHOOK_URL') }}"
     github_app_webhook_secret: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_WEBHOOK_SECRET') }}"
+    github_org: "{{ lookup('ansible.builtin.env', 'GITHUB_ORG') }}"
     github_org_url: "{{ lookup('ansible.builtin.env', 'GITHUB_ORG_URL') }}"
     quay_token: "{{ lookup('ansible.builtin.env', 'QUAY_TOKEN') }}"
     rhdh_quay_pull_secret: "{{ lookup('ansible.builtin.env', 'RHDH_REGISTRY_PULL_SECRET') }}"
@@ -30,7 +31,7 @@
     state: present
     definition: "{{ lookup('template', 'rhdh-namespace.yaml') | from_yaml }}"
 
-- name: Create the rhdh pull secret #required before GA
+- name: Create the rhdh pull secret # required before GA
   kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('template', 'rhdh-pull-secret.yaml') | from_yaml }}"
@@ -122,9 +123,9 @@
     #   -f "/tmp/{{ rhdh_helm_values_file }}" \
     #   openshift-helm-charts/redhat-developer-hub \
     #   --namespace "{{ idp_namespace }}"
-    helm install -n "{{ idp_namespace }}" \
+    helm upgrade -i developer-hub -n "{{ idp_namespace }}" \
     -f "/tmp/{{ rhdh_helm_values_file }}" \
-    developer-hub https://github.com/rhdh-bot/openshift-helm-charts/raw/developer-hub-1.0-163-CI/charts/redhat/redhat/developer-hub/1.0-163-CI/developer-hub-1.0-163-CI.tgz
+    https://github.com/rhdh-bot/openshift-helm-charts/raw/developer-hub-1.0-163-CI/charts/redhat/redhat/developer-hub/1.0-163-CI/developer-hub-1.0-163-CI.tgz
 
 # - name: Deploy RHDH chart on 0.2.0 with values loaded from template
 #   kubernetes.core.helm:
