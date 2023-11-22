@@ -49,9 +49,9 @@ data:
               frequency:
                 minutes: 10
               timeout: 
-                minutes: 1
+                minutes: 2
               initialDelay:
-                seconds: 15
+                seconds: 60
 
     kubernetes:
       clusterLocatorMethods:

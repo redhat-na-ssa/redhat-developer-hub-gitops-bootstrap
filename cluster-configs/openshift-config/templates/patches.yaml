@@ -44,25 +44,25 @@ spec:
     #     {{ "{{" }} (index . 0).imagePullSecrets | toYaml | indent 2 {{ "}}" }}
     #     {{ "{{-" }} end {{ "}}" }}                
     #   patchType: application/merge-patch+json     
-    gitlab-host-domain:
-      targetObjectRef:
-        apiVersion: apps.gitlab.com/v1beta1
-        kind: GitLab
-        name: gitlab
-      # these are the objects that will be watched and become part of the parameters of the patch template.
-      sourceObjectRefs:
-      - apiVersion: config.openshift.io/v1
-        kind: Ingress
-        name: cluster
-      patchTemplate: |
-        {{ "{{-" }} $clusterDomain:= (index . 1).spec.domain {{ "-}}" }}
-        spec:
-          chart:
-            values:
-              global:
-                hosts:
-                  domain: gitlab-gitlab-system.{{ "{{" }} $clusterDomain {{ "}}" }}
-      patchType: application/merge-patch+json
+    # gitlab-host-domain:
+    #   targetObjectRef:
+    #     apiVersion: apps.gitlab.com/v1beta1
+    #     kind: GitLab
+    #     name: gitlab
+    #   # these are the objects that will be watched and become part of the parameters of the patch template.
+    #   sourceObjectRefs:
+    #   - apiVersion: config.openshift.io/v1
+    #     kind: Ingress
+    #     name: cluster
+    #   patchTemplate: |
+    #     {{ "{{-" }} $clusterDomain:= (index . 1).spec.domain {{ "-}}" }}
+    #     spec:
+    #       chart:
+    #         values:
+    #           global:
+    #             hosts:
+    #               domain: gitlab-gitlab-system.{{ "{{" }} $clusterDomain {{ "}}" }}
+    #   patchType: application/merge-patch+json
     vault-console-link:
       targetObjectRef:
         apiVersion: console.openshift.io/v1
