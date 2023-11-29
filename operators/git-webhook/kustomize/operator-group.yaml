@@ -2,9 +2,9 @@ apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
   annotations:
+    olm.providedAPIs: GitWebhook.v1alpha1.redhatcop.redhat.io
     argocd.argoproj.io/sync-wave: "0"
   name: gitwebhook-og
+  namespace: gitwebhook-operator
 spec:
-  targetNamespaces:
-    - gitwebhook-operator
   upgradeStrategy: Default

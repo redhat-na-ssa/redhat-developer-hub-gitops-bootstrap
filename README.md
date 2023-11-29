@@ -1,21 +1,20 @@
-# Openshift Dev Workflows Gitops Cluster Bootstrap
+# Red Hat Developer Hub Gitops Cluster Bootstrap
 
-This project repo contains a set of ArgoCD manifests used to bootstrap a Openshift Cluster v4.x using GitOps approach. The produced environment is intended for Developer workflows demo.
+This project repo contains a set of ArgoCD manifests and a set of Ansible Playbooks used to bootstrap a Developer Hub Environment on top of Openshift v4.x. The produced environment is intended for Developer workflows demo.
 
 It uses the ArgoCD **App of Apps pattern** to pre-install and configure a set of Openshift Operators to support Developer Workflows.
 
 The following components should be provisioned by ArgoCD in your cluster:
-
- * **Openshift Pipelines**
+ * **Cert Manager**
  * **Container Security Operator**
- * **Crunchy Postgres Operator**
  * **Openshift Devspaces**
- * **Hyperfoil.io Load Driver Operator**
+ * **Git Webhook Operator**
+ * **Gilab**
+ * **Hashicorp Vault**
+ * **Vault Config Operator**
  * **Kubernetes Image Puller Operator**
- * **Openshift Serverless (Knative Serving)**
+ * **Openshift Pipelines**
  * **Patch Operator**
- * **Service Binding Operator (SBO)**
- * **Sonatype Nexus**
  * **...** (this list keeps growing as I need to add new components to my demos)
 
 # First things first
@@ -23,38 +22,20 @@ If you got a "naked cluster" with just the `kubeadmin` system user. You can star
 
 This script will create the `admin` user as `cluster-admin` and 5 other regular (non-admin) users.
 
-# Openshift GitOps installation
+# Openshift GitOps installation and cluster bootstrap
 You can choose to install **Openshift GitOps** Operator manually from the Operator Hub using the Openshift Console (Administrator Perspective) or you can
 
  1. Authenticate as a `cluster-admin` on your cluster and execute
 
 ```shell
-oc apply -f ./openshift-gitops-install/operator.yaml
-
-#wait until the Gitops operators is ready
-oc wait pods -n openshift-operators -l control-plane=controller-manager --for condition=Ready
-#now create an argocd instance
-oc apply -f ./openshift-gitops-install/argocd.yaml
+ ./bootstrap-scripts/cluster-boostrap.sh 
 ```
 
- 2. Apply additional `ClusterRoleBindings` to ArgoCD Controller Service Accounts
-
-```shell
-oc apply -f ./openshift-gitops-install/rbac.yaml
-```
-
-> **IMPORTANT**: Make your cluster admin(s) ArgoCD Admins (already done if you use the `bootstrap-scripts/enable-htpasswd-users.sh`)
-```shell
-oc adm groups new cluster-admins <your admin username here>
-```
-
-## Bootstrapping the components provisioning though Openshift GitOps (ArgoCD)
-After installing Openshift GitOps you can go ahead and create the **Argo Apps of Apps** using
-
-```shell
-oc apply -f root-app/app-of-apps.yaml
-```
-
+This script will:
+ * install Openshift GitOps (ArgoCD)
+ * apply the ArgoCD root app
+ * kickoff the cluster bootstrap
+ 
 After applying this manifest go to the ArgoCD web console and watch the provisioning.
 > **IMPORTANT**: It will take a while to have all components provisioned and in healthy state. The provisioning happens in "waves". You may have to refresh od sync come apps in case they remain in unhealthy state.
 

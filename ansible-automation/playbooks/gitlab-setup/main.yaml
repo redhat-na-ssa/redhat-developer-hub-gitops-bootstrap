@@ -1,15 +1,12 @@
-- name: Vault Config setup
+- name: Gitlab setup
   hosts: localhost
   gather_facts: false
   vars:
-    setup_rhsso: false
     idp_namespace: "rhdh"
     idp_instance_name: "rhdh"
     rhdh_helm_chart_version: "0.2.0"
     git_system: "github"
     gitlab_instance_name: "gitlab"
-    github_host: "github.com"
-    github_application_id: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_APP_ID') }}"
     gitlab_root_secret_name: "{{ gitlab_instance_name }}-gitlab-initial-root-password"
     gitlab_namespace: "gitlab-system"
     gitlab_host: ""
@@ -38,13 +35,32 @@
         apps_cluster_domain: "{{ r_ingress_config.resources[0].spec.domain }}"
         cluster_api_url: "{{ r_infra_config.resources[0].status.apiServerURL }}"
 
+    - name: Set OpenShift Apps URLs
+      ansible.builtin.set_fact:
+        gitlab_host: "gitlab.gitlab-{{
+          gitlab_namespace }}.{{
+          apps_cluster_domain }}"
+        keycloak_host: "keycloak-{{
+          idp_namespace }}.{{
+          apps_cluster_domain }}"
+        backstage_host: "backstage-{{
+          idp_namespace }}.{{
+          apps_cluster_domain }}"
+        devspaces_host: "devspaces.{{
+          apps_cluster_domain }}"
+        openshift_redirect_host: "oauth-openshift.{{
+          apps_cluster_domain }}"
+        openshift_console_host: console-openshift-console.{{
+          apps_cluster_domain }}
+        quay_host: "quay.io"
+
     - name: Debug vars
       ansible.builtin.debug:
         msg:
           - "apps_cluster_domain: {{ apps_cluster_domain }}"
           - "cluster_api_url: {{ cluster_api_url }}"
 
-    - name: Setup Vault
+    - name: Setup Gitlab dependencies
       ansible.builtin.include_tasks:
-        file: ./setup_vault.yml
-
+        file: ./setup_gitlab.yml
+      when: git_system == "gitlab"

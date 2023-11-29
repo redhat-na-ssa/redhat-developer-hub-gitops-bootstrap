@@ -30,7 +30,7 @@
         name: cluster
       register: r_ingress_config
 
-    - name: Retrieve Ingress config
+    - name: Retrieve Infrastructure config
       kubernetes.core.k8s_info:
         api_version: config.openshift.io/v1
         kind: Infrastructure

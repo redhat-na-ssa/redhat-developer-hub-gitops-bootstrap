@@ -264,6 +264,7 @@ helmCharts:
               EOF
                     else 
                       echo vault admin already configured, just updating kubernetes config
+                      #ref: https://kubernetes.io/docs/tasks/run-application/access-api-from-pod/
                       vault write auth/kubernetes/config token_reviewer_jwt=@/var/run/secrets/kubernetes.io/serviceaccount/token kubernetes_host=https://kubernetes.default.svc:443 kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt 
                       echo creating accessor configmap
                       accessor=$(vault auth list -detailed | grep kubernetes | awk '{print $3}')
