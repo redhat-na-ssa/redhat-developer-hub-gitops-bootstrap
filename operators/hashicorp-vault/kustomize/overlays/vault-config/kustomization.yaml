@@ -7,7 +7,7 @@ patches:
   - patch: |-
       - op: replace
         path: /spec/applicationID
-        value: 123
+        value: "401106"
     target:
       kind: GitHubSecretEngineConfig
   - patch: |-
@@ -24,7 +24,7 @@ patches:
       kind: QuaySecretEngineConfig
   - patch: |-
       - op: replace
-        path: /spec/url
-        value: "https://quay.io"
+        path: /spec/namespaceName
+        value: "redhat_na_ssa"
     target:
       kind: QuaySecretEngineRole
