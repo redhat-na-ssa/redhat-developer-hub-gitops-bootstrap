@@ -7,7 +7,7 @@ patches:
   - patch: |-
       - op: replace
         path: /spec/applicationID
-        value: "401106"
+        value: 401106
     target:
       kind: GitHubSecretEngineConfig
   - patch: |-
