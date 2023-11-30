@@ -2,6 +2,29 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../bases/vault-config/
-  - ./secret-engines/mounts
-  - ./secret-engines/configs
-  - ./secret-engines/roles
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/applicationID
+        value: 123
+    target:
+      kind: GitHubSecretEngineConfig
+  - patch: |-
+      - op: replace
+        path: /spec/organizationName
+        value: "redhat-na-ssa"
+    target:
+      kind: GitHubSecretEngineRole
+  - patch: |-
+      - op: replace
+        path: /spec/url
+        value: "https://quay.io"
+    target:
+      kind: QuaySecretEngineConfig
+  - patch: |-
+      - op: replace
+        path: /spec/url
+        value: "https://quay.io"
+    target:
+      kind: QuaySecretEngineRole
