@@ -32,11 +32,11 @@
 # - name: Create vault auth resources
 #   k8s:
 #     state: present
-#     definition: "{{ lookup('template', item) | from_yaml }}"
+#     definition: "{{ lookup('file', item) | from_yaml }}"
 #   loop:
-#     - service-account-vault.yml.j2
-#     - cluster-role-binding-role-token-review.yml.j2
-#     - secret-vault-auth.yml.j2
+#     - vault-service-account.yml
+#     - vault-cluster-role-binding-role-token-review.yml
+#     - vault-auth-secret.yml
 #
 #####
 # this is already being done during Vault initialization though Helm Chart (values.extraContainers)
@@ -106,14 +106,14 @@
 #     oc exec vault-0 -c vault -n vault -- vault secrets enable -address https://vault.vault.svc:8200 -path=quay vault-plugin-secrets-quay
 #   ignore_errors: true #in case it already created
 
-- name: Create Vault Secret Engines
-  k8s:
-    state: present
-    definition: "{{ lookup('file', item) | from_yaml }}"
-  loop:
-    - vault-git-secret-engine-mount.yml
-    - vault-kv-secret-engine-mount.yml
-    - vault-quay-secret-engine-mount.yml
+# - name: Create Vault Secret Engines
+#   k8s:
+#     state: present
+#     definition: "{{ lookup('file', item) | from_yaml }}"
+#   loop:
+#     - vault-git-secret-engine-mount.yml
+#     - vault-kv-secret-engine-mount.yml
+#     - vault-quay-secret-engine-mount.yml
 
 # Not needed yet for this demo
 # - name: Populate Vault with Dev Spaces Secrets
@@ -148,13 +148,13 @@
       # private_key: "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'GITHUB_KEY_FILE')) }}"
     token: "{{ vault_token }}"
 
-- name: Concatenate Registry Credentials
-  ansible.builtin.set_fact:
-    registry_credentials: "{{ lookup('ansible.builtin.env', 'QUAY_USER') }}:{{ lookup('ansible.builtin.env', 'QUAY_TOKEN') }}"
+# - name: Concatenate Registry Credentials
+#   ansible.builtin.set_fact:
+#     registry_credentials: "{{ lookup('ansible.builtin.env', 'QUAY_USER') }}:{{ lookup('ansible.builtin.env', 'QUAY_TOKEN') }}"
 
-- name: Encode Registry Credentials
-  ansible.builtin.set_fact:
-    encoded_registry_credentials: "{{ registry_credentials | b64encode }}"
+# - name: Encode Registry Credentials
+#   ansible.builtin.set_fact:
+#     encoded_registry_credentials: "{{ registry_credentials | b64encode }}"
 
 - name: Populate Vault with Registry Credentials
   # community.hashi_vault.vault_kv2_write:
@@ -164,22 +164,18 @@
     path: kv/secrets/{{ idp_instance_name }}/registry-plugin
     validate_certs: false
     data:
-      credentials: "{{ encoded_registry_credentials }}"
+      # credentials: "{{ encoded_registry_credentials }}"
       username: "{{ lookup('ansible.builtin.env', 'QUAY_USER') }}"
       password: "{{ lookup('ansible.builtin.env', 'QUAY_TOKEN') }}"
     token: "{{ vault_token }}"
 
-# - name: Write Quay Config on Quay Vault Plugin Secret
-#   ansible.builtin.shell: |
-#     oc exec vault-0 -c vault -n vault -- vault write -address https://vault.vault.svc:8200 quay/config url={{ quay_registry_server_url }} token={{ lookup('ansible.builtin.env', 'QUAY_TOKEN') }}
-
-- name: Create Vault Config Resources
-  k8s:
-    state: present
-    definition: "{{ lookup('template', item) | from_yaml }}"
-  loop:
-    - vault-github-secret-engine-config.yml.j2
-    - vault-quay-secret-engine-config.yml.j2
-    - vault-github-secret-engine-role.yml.j2
-    - vault-quay-secret-engine-role.yml.j2
-    - vault-git-webhook-password-policy.yml.j2
+# - name: Create Vault Config Resources
+#   k8s:
+#     state: present
+#     definition: "{{ lookup('template', item) | from_yaml }}"
+#   loop:
+#     - vault-github-secret-engine-config.yml.j2
+#     - vault-quay-secret-engine-config.yml.j2
+#     - vault-github-secret-engine-role.yml.j2
+#     - vault-quay-secret-engine-role.yml.j2
+#     - vault-git-webhook-password-policy.yml.j2

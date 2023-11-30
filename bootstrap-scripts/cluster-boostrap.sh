@@ -57,9 +57,9 @@ echo
 echo "apply additional ClusterRoleBindings to ArgoCD Controller Service Accounts"
 oc apply -f $SCRIPT_RELATIVE_DIR_PATH/../openshift-gitops-install/rbac.yaml
 
-echo
-echo "bootstrapping the components though Openshift GitOps (ArgoCD)..."
-oc apply -f $SCRIPT_RELATIVE_DIR_PATH/../root-app/app-of-apps.yaml
+#echo
+#echo "bootstrapping the components though Openshift GitOps (ArgoCD)..."
+#oc apply -f $SCRIPT_RELATIVE_DIR_PATH/../root-app/app-of-apps.yaml
 
 argocdurl=$(oc get route openshift-gitops-server --ignore-not-found=true -n "openshift-gitops" -o jsonpath="{'https://'}{.status.ingress[0].host}")
 echo

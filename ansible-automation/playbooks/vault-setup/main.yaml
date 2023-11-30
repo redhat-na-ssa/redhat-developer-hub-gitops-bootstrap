@@ -2,21 +2,13 @@
   hosts: localhost
   gather_facts: false
   vars:
-    setup_rhsso: false
     idp_namespace: "rhdh"
     idp_instance_name: "rhdh"
     rhdh_helm_chart_version: "0.2.0"
     git_system: "github"
-    gitlab_instance_name: "gitlab"
-    github_host: "github.com"
     github_application_id: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_APP_ID') }}"
-    gitlab_root_secret_name: "{{ gitlab_instance_name }}-gitlab-initial-root-password"
-    gitlab_namespace: "gitlab-system"
-    gitlab_host: ""
     quay_registry_server_url: "https://quay.io"
     vault_namespace: "vault"
-    keycloak_host: ""
-    backstage_gitops_repo: "https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git"
 
   tasks:
     - name: Retrieve Ingress config
@@ -47,4 +39,3 @@
     - name: Setup Vault
       ansible.builtin.include_tasks:
         file: ./setup_vault.yml
-
