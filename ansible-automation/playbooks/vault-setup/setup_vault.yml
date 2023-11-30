@@ -99,12 +99,12 @@
 #  url=https://quay.io \
 #  token= #Quay OAuth App token (with 'Administer Organization' grant!!!)
 
-# - name: Enable Secret engines for kv, github and quay
-#   ansible.builtin.shell: |
-#     oc exec vault-0 -c vault -n vault -- vault secrets enable -address https://vault.vault.svc:8200 -version=1 -path=kv kv
-#     oc exec vault-0 -c vault -n vault -- vault secrets enable -address https://vault.vault.svc:8200 -path=github vault-plugin-secrets-github
-#     oc exec vault-0 -c vault -n vault -- vault secrets enable -address https://vault.vault.svc:8200 -path=quay vault-plugin-secrets-quay
-#   ignore_errors: true #in case it already created
+- name: Enable Secret engines for kv, github and quay
+  ansible.builtin.shell: |
+    oc exec vault-0 -c vault -n vault -- vault secrets enable -address https://vault.vault.svc:8200 -version=1 -path=kv kv
+    # oc exec vault-0 -c vault -n vault -- vault secrets enable -address https://vault.vault.svc:8200 -path=github vault-plugin-secrets-github
+    # oc exec vault-0 -c vault -n vault -- vault secrets enable -address https://vault.vault.svc:8200 -path=quay vault-plugin-secrets-quay
+  ignore_errors: true #in case it already created
 
 # - name: Create Vault Secret Engines
 #   k8s:
