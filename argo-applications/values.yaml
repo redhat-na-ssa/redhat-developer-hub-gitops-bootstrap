@@ -6,6 +6,10 @@ git:
   organization: redhat-na-ssa
 gitlab:
   install: false
+rhsso:
+  install: false
+certmanager:
+  install: false
 helm:
   charts:
     gitlab:

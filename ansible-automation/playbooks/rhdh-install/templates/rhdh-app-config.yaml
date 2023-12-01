@@ -53,6 +53,21 @@ data:
               initialDelay:
                 seconds: 60
 
+    proxy:
+      endpoints:  
+      '/quay/api':
+            target: ${QUAY_URL}
+            headers:
+              X-Requested-With: 'XMLHttpRequest'
+              Authorization: "Bearer ${QUAY_BEARER_TOKEN}"
+            changeOrigin: true
+            # Change to "false" in case of using self hosted quay instance with a self-signed certificate
+            secure: false
+
+    quay:
+      # The UI url for Quay, used to generate the link to Quay
+      uiUrl: ${QUAY_URL}
+
     kubernetes:
       clusterLocatorMethods:
         - clusters:

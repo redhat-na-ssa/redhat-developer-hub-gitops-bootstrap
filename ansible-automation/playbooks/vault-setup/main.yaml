@@ -9,6 +9,7 @@
     github_application_id: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_APP_ID') }}"
     quay_registry_server_url: "https://quay.io"
     vault_namespace: "vault"
+    vault_cluster_name: "dev-cluster"
 
   tasks:
     - name: Retrieve Ingress config
