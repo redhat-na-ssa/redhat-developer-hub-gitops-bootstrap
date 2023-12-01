@@ -13,7 +13,7 @@ spec:
   # Source of the application manifests
   source:
     repoURL: https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git
-    targetRevision: HEAD
+    targetRevision: peer-review
     path: components/argocd/apps/overlays/dev-hub-demo
     directory:
       recurse: false
