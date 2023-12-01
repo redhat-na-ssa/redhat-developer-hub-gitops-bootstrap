@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git
     targetRevision: peer-review
-    path: components/argocd/apps/overlays/dev-hub-demo/alpha
+    path: components/operators/patch-operator/operator/overlays/alpha
     # directory:
     #   include: operator.yaml
   destination:
