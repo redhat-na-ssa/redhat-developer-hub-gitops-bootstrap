@@ -3,6 +3,8 @@ kind: Kustomization
 
 resources:
   - app-of-apps.yaml
+  - config-devspaces.yaml
   - operator-cert-manager.yaml
+  - operator-devspaces.yaml
   - operator-openshift-pipelines.yaml
   - operator-patch-operator.yaml
