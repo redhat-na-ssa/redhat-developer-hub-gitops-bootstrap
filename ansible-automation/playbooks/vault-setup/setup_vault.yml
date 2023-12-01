@@ -32,25 +32,24 @@
     state: present
     definition: "{{ lookup('file', item) | from_yaml }}"
   loop:
-    - vault-service-account.yml
+    - vault-auth-service-account.yml
     - vault-cluster-role-binding-role-token-review.yml
     - vault-auth-secret.yml
 
 - name: Create vault-admin policy
   ansible.builtin.shell: |
-    #rsync the policy file into Vault POD
-    oc cp files/vault-config-admin-policy.hcl vault-0:/tmp -c vault -n {{ vault_namespace }}
-    #oc exec vault-0 -c vault -n {{ vault_namespace }} -- bash -c 'rm -rf /tmp/admin-policy.hcl'
-    #oc exec vault-0 -c vault -n {{ vault_namespace }} -- bash -c 'echo path \"*\" >> /tmp/admin-policy.hcl'
-    #oc exec vault-0 -c vault -n {{ vault_namespace }} -- bash -c 'echo {  capabilities = [\"read\", \"list\"] >> /tmp/adm-policy.hcl'
-    #oc exec vault-0 -c vault -n {{ vault_namespace }} -- bash -c 'echo } >> /tmp/adm-policy.hcl'
+    oc exec vault-0 -c vault -n {{ vault_namespace }} -- bash -c 'rm -rf /tmp/adm-policy.hcl'
+    oc exec vault-0 -c vault -n {{ vault_namespace }} -- bash -c 'echo path \"/*\" >> /tmp/adm-policy.hcl'
+    oc exec vault-0 -c vault -n {{ vault_namespace }} -- \
+    bash -c 'echo {  capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\", \"sudo\"] >> /tmp/adm-policy.hcl'
+    oc exec vault-0 -c vault -n {{ vault_namespace }} -- bash -c 'echo } >> /tmp/adm-policy.hcl'
     oc exec vault-0 -c vault -n {{ vault_namespace }} -- bash -c \
-    'vault policy write -address https://vault.vault.svc:8200 adm-policy /tmp/vault-config-admin-policy.hcl'
+    'vault policy write -address https://vault.vault.svc:8200 vault-admin /tmp/adm-policy.hcl'
 
 - name: Enable kubernetes auth for the Dev Cluster
   ansible.builtin.shell: |
     export SA_SECRET_NAME=$(oc get secrets -n vault-admin --output=json \
-    | jq -r '.items[].metadata | select(.name|startswith("vault-auth-secret")).name')
+    | jq -r '.items[].metadata | select(.name|startswith("vault-auth-token")).name')
     export SA_JWT_TOKEN=$(oc get secret $SA_SECRET_NAME -n vault-admin \
     --output 'go-template={{ "{{" }} .data.token {{ "}}" }}' | base64 --decode)
     export SA_CA_CRT=$(oc config view --raw --minify --flatten \
@@ -71,42 +70,34 @@
 - name: Create role and service account authentication
   ansible.builtin.shell: |
     oc exec vault-0 -c vault -n {{ vault_namespace
-      }} -- vault write -address https://vault.vault.svc:8200 auth/{{ vault_cluster_name }}-admin/role/policy-admin \
+      }} -- vault write -address https://vault.vault.svc:8200 auth/{{ vault_cluster_name }}-admin/role/vault-admin \
     bound_service_account_names=vault-auth \
     bound_service_account_namespaces=vault-admin \
-    token_policies=adm-policy \
+    token_policies=vault-admin \
     ttl=160h
 
     export SA_SECRET_NAME=$(oc get secrets -n vault-admin --output=json \
-    | jq -r '.items[].metadata | select(.name|startswith("vault-auth-secret")).name')
+    | jq -r '.items[].metadata | select(.name|startswith("vault-auth-token")).name')
     export SA_JWT_TOKEN=$(oc get secret $SA_SECRET_NAME -n vault-admin \
     --output 'go-template={{ "{{" }} .data.token {{ "}}" }}' | base64 --decode)
 
-    echo "try to login into Vault using the Kubernetes auth endpoint and the vault-auth Service Account..."
+    #try to login into Vault using the Kubernetes auth endpoint and the vault-auth Service Account...
     oc exec vault-0 -c vault -n vault -- \
-    vault write -address https://vault.vault.svc:8200 auth/{{ vault_cluster_name }}-admin/login role=adm-role jwt=$SA_JWT_TOKEN
+    vault write -address https://vault.vault.svc:8200 auth/{{ vault_cluster_name }}-admin/login role=vault-admin jwt=$SA_JWT_TOKEN
 
-    echo "stores the Vault accessor name into a ConfigMap"
+    #stores the Vault accessor name into a ConfigMap
     accessor=$(oc exec vault-0 -c vault -n vault -- \
     vault read -address https://vault.vault.svc:8200 -format json sys/auth \
     | jq -r '.data["{{ vault_cluster_name }}-admin/"].accessor')
 
-    oc create configmap kubeauth-accessor -n vault --from-literal=accessor=${accessor}
+    oc delete configmap kubeauth-accessor -n {{ vault_namespace }} --ignore-not-found=true
+    oc create configmap kubeauth-accessor -n {{ vault_namespace }} --from-literal=accessor=${accessor}
 
 - name: Enable kv Secret engine
   ansible.builtin.shell: |
     oc exec vault-0 -c vault -n vault -- \
     vault secrets enable -address https://vault.vault.svc:8200 -version=1 -path=kv kv
   ignore_errors: true #in case it's already created
-
-# - name: Create Vault Secret Engines
-#   k8s:
-#     state: present
-#     definition: "{{ lookup('file', item) | from_yaml }}"
-#   loop:
-#     - vault-git-secret-engine-mount.yml
-#     - vault-kv-secret-engine-mount.yml
-#     - vault-quay-secret-engine-mount.yml
 
 - name: Get GitHub AppId
   ansible.builtin.set_fact:
