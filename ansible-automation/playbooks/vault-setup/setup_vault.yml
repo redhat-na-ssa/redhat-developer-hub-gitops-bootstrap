@@ -32,9 +32,9 @@
     state: present
     definition: "{{ lookup('file', item) | from_yaml }}"
   loop:
-    - vault-auth-service-account.yml
+    #- vault-auth-service-account.yml
     - vault-cluster-role-binding-role-token-review.yml
-    - vault-auth-secret.yml
+    #- vault-auth-secret.yml
 
 - name: Create vault-admin policy
   ansible.builtin.shell: |
@@ -49,7 +49,7 @@
 - name: Enable kubernetes auth for the Dev Cluster
   ansible.builtin.shell: |
     export SA_SECRET_NAME=$(oc get secrets -n vault-admin --output=json \
-    | jq -r '.items[].metadata | select(.name|startswith("vault-auth-token")).name')
+    | jq -r '.items[].metadata | select(.name|startswith("default-token")).name')
     export SA_JWT_TOKEN=$(oc get secret $SA_SECRET_NAME -n vault-admin \
     --output 'go-template={{ "{{" }} .data.token {{ "}}" }}' | base64 --decode)
     export SA_CA_CRT=$(oc config view --raw --minify --flatten \
@@ -67,21 +67,21 @@
     kubernetes_ca_cert="$SA_CA_CRT" \
     issuer="https://kubernetes.default.svc.cluster.local"
 
-- name: Create role and service account authentication
+- name: Create vault-admin Role for Kubernetes authentication
   ansible.builtin.shell: |
     oc exec vault-0 -c vault -n {{ vault_namespace
       }} -- vault write -address https://vault.vault.svc:8200 auth/{{ vault_cluster_name }}-admin/role/vault-admin \
-    bound_service_account_names=vault-auth \
+    bound_service_account_names=default \
     bound_service_account_namespaces=vault-admin \
     token_policies=vault-admin \
     ttl=160h
 
     export SA_SECRET_NAME=$(oc get secrets -n vault-admin --output=json \
-    | jq -r '.items[].metadata | select(.name|startswith("vault-auth-token")).name')
+    | jq -r '.items[].metadata | select(.name|startswith("default-token")).name')
     export SA_JWT_TOKEN=$(oc get secret $SA_SECRET_NAME -n vault-admin \
     --output 'go-template={{ "{{" }} .data.token {{ "}}" }}' | base64 --decode)
 
-    #try to login into Vault using the Kubernetes auth endpoint and the vault-auth Service Account...
+    #try to login into Vault using the Kubernetes auth endpoint and the default Service Account...
     oc exec vault-0 -c vault -n vault -- \
     vault write -address https://vault.vault.svc:8200 auth/{{ vault_cluster_name }}-admin/login role=vault-admin jwt=$SA_JWT_TOKEN
 
