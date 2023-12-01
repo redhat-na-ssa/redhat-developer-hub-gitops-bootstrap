@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: root-application
+  name: app-of-apps
   namespace: openshift-gitops
   # Add a this finalizer ONLY if you want these to cascade delete.
   finalizers:
@@ -14,14 +14,7 @@ spec:
   source:
     repoURL: https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git
     targetRevision: HEAD
-    path: argo-applications
-    helm:
-      values: | 
-        gitRepo: 
-          URL: https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git
-          targetRevision: HEAD
-        git: 
-          organization: redhat-na-ssa
+    path: components/argocd/apps/overlays/dev-hub-demo
     directory:
       recurse: false
   # Destination cluster and namespace to deploy the application
