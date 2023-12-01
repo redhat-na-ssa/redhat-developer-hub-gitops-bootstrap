@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cert-manager
+  name: operator-cert-manager
   namespace: openshift-gitops
   finalizers:
   - resources-finalizer.argocd.argoproj.io
