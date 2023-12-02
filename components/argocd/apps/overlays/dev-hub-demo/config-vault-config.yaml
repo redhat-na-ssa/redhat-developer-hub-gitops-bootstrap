@@ -13,8 +13,6 @@ spec:
     repoURL: https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git
     targetRevision: peer-review
     path: operators/hashicorp-vault/kustomize/overlays/vault-config
-    directory:
-      recurse: false
   destination:
     server: https://kubernetes.default.svc
     namespace: vault
