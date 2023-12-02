@@ -8,12 +8,11 @@ patches:
   - patch: |-
       - op: replace
         path: /spec/config
-        value: 
-          configs:
-            env:
-            - name: VAULT_ADDR
-              value: https://vault.vault.svc:8200
-            - name: VAULT_SKIP_VERIFY
-              value: "true"
+        value:
+          env:
+          - name: VAULT_ADDR
+            value: https://vault.vault.svc:8200
+          - name: VAULT_SKIP_VERIFY
+            value: "true"
     target:
       kind: Subscription      
