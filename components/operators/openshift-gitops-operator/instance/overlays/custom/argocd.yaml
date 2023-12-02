@@ -1,0 +1,239 @@
+apiVersion: argoproj.io/v1beta1
+kind: ArgoCD
+metadata:
+  name: openshift-gitops
+  namespace: openshift-gitops
+spec:
+  server:
+    autoscale:
+      enabled: false
+    grpc:
+      ingress:
+        enabled: false
+    ingress:
+      enabled: false
+    resources:
+      # limits:
+      #   cpu: 500m
+      #   memory: 256Mi
+      requests:
+        cpu: 125m
+        memory: 128Mi
+    route:
+      enabled: true
+      tls:
+        insecureEdgeTerminationPolicy: Redirect
+        termination: reencrypt      
+    service:
+      type: ''
+  grafana:
+    enabled: false
+    ingress:
+      enabled: false
+    route:
+      enabled: false
+  prometheus:
+    enabled: false
+    ingress:
+      enabled: false
+    route:
+      enabled: false
+  initialSSHKnownHosts: {}
+  applicationSet:
+    resources:
+      # limits:
+      #   cpu: '2'
+      #   memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+  rbac:
+    defaultPolicy: 'role:admin'
+    policy: |
+      g, gitops-admins, role:admin
+      g, system:cluster-admins, role:admin
+      g, cluster-admins, role:admin
+    scopes: '[groups]'
+  repo:
+    resources:
+      # limits:
+      #   cpu: '1'
+      #   memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+  kustomizeBuildOptions: '--enable-helm --load-restrictor LoadRestrictionsNone'
+  resourceExclusions: |
+    - apiGroups:
+      - tekton.dev
+      - tekton.dev
+      clusters:
+      - '*'
+      kinds:
+      - TaskRun
+      - PipelineRun
+  sso:
+    provider: dex
+    dex:
+      openShiftOAuth: true
+      resources:
+        # limits:
+        #   cpu: 500m
+        #   memory: 256Mi
+        requests:
+          cpu: 250m
+          memory: 128Mi
+  ha:
+    enabled: false
+  tls:
+    ca: {}
+  redis:
+    resources:
+      # limits:
+      #   cpu: 500m
+      #   memory: 256Mi
+      requests:
+        cpu: 250m
+        memory: 128Mi
+  controller:
+    processors: {}
+    resources:
+      limits:
+        cpu: '2'
+        memory: 2Gi
+      requests:
+        cpu: 250m
+        memory: 1Gi
+    sharding: {}
+  resourceIgnoreDifferences:
+    resourceIdentifiers:
+    - group: quay.redhat.com
+      kind: QuayRegistry
+      customization:
+        jsonPointers:
+        - /spec/components
+    - group: route.openshift.io
+      kind: Route
+      customization:
+        jsonPointers:
+        - /spec/host
+    - group: apps
+      kind: Deployment
+      customization:
+        jsonPointers:
+        - /spec/template/spec/containers/0/image
+    - group: apps.openshift.io
+      kind: DeploymentConfig
+      customization:
+        jsonPointers:
+        - /spec/template/spec/containers/0/image
+  resourceHealthChecks:
+    - group: argoproj.io
+      kind: Application
+      check: |
+        hs = {}
+        hs.status = "Progressing"
+        hs.message = ""
+        if obj.status ~= nil then
+          if obj.status.health ~= nil then
+            hs.status = obj.status.health.status
+            hs.message = obj.status.health.message
+          end
+        end
+        return hs
+    - group: image.openshift.io
+      kind: ImageStream
+      check: |
+        hs = {}
+        hs.status = "Progressing"
+        hs.message = ""
+        if obj.status ~= nil then
+          if obj.status.tags ~= nil then
+            numTags = 0
+            for _ , item in pairs(obj.status.tags) do
+              numTags = numTags + 1
+              numItems = 0
+              if item.tags ~= nil then
+                for _ , item in pairs(item.tags) do
+                  numItems = numItems + 1
+                end
+                if numItems == 0 then
+                  return hs
+                end
+              end
+            end
+            if numTags > 0 then
+              hs.status = "Healthy"
+              hs.message = "ImageStream has tags resolved"
+              return hs
+            end
+          end
+        end
+        return hs
+    - group: operators.coreos.com
+      kind: Subscription
+      check: |
+        hs = {}
+        if obj.status ~= nil then
+          if obj.status.currentCSV ~= nil and (obj.status.state == "AtLatestKnown" or obj.status.state == "UpgradeAvailable" or obj.status.state == "UpgradePending") then
+            hs.status = "Healthy"
+            hs.message = "Subscription installed"
+            return hs
+          end
+        end
+        hs.status = "Progressing"
+        hs.message = "Waiting for Subscription to complete."
+        return hs
+    - group: ""
+      kind: PersistentVolumeClaim
+      check: |
+        hs = {}
+        if obj.status ~= nil then
+          if obj.status.phase ~= nil then
+            if obj.status.phase == "Pending" then
+              hs.status = "Healthy"
+              hs.message = obj.status.phase
+              return hs
+            end
+            if obj.status.phase == "Bound" then
+              hs.status = "Healthy"
+              hs.message = obj.status.phase
+              return hs
+            end
+          end
+        end
+        hs.status = "Progressing"
+        hs.message = "Waiting for PVC"
+        return hs
+    - group: operators.coreos.com
+      kind: InstallPlan
+      check: |
+        hs = {}
+        if obj.status ~= nil then
+          if obj.status.phase ~= nil then
+            if obj.status.phase == "Complete" then
+              hs.status = "Healthy"
+              hs.message = obj.status.phase
+              return hs
+            end
+          end
+        end
+        hs.status = "Progressing"
+        hs.message = "Waiting for InstallPlan to complete"
+        return hs
+    - group: build.openshift.io
+      kind: Build
+      check: |
+        hs = {}
+        if obj.status ~= nil then
+          if obj.status.phase ~= nil then
+            if obj.status.phase == "Complete" then
+              hs.status = "Healthy"
+              hs.message = obj.status.phase
+              return hs
+            end
+          end
+        end
+        hs.status = "Progressing"
+        hs.message = "Waiting for Build to complete"
+        return hs
