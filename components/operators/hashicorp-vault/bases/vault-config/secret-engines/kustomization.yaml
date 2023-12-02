@@ -1,0 +1,13 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: vault-admin
+resources:
+  #- ./vault-kv-secret-engine-mount.yml
+  - ./vault-git-secret-engine-mount.yml
+  - ./vault-quay-secret-engine-mount.yml
+  - ./vault-github-secret-engine-config.yml
+  - ./vault-github-secret-engine-role.yml
+  - ./vault-quay-secret-engine-config.yml
+  - ./vault-quay-secret-engine-role.yml
+  - ./vault-git-webhook-password-policy.yml
