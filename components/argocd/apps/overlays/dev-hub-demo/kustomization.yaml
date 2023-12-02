@@ -14,4 +14,4 @@ resources:
   - operator-image-puller.yaml
   - operator-openshift-pipelines.yaml
   - operator-patch-operator.yaml
-  - operator-vault.yaml
+  - operator-vault-config.yaml
