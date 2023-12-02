@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git
     targetRevision: peer-review
-    path: components/operators/hashicorp-vault/overlays/vault-config-operator
+    path: components/operators/vault-config-operator/operator/overlays/alpha
     directory:
       recurse: false
   destination:
