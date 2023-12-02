@@ -18,9 +18,9 @@ The following components should be provisioned by ArgoCD in your cluster:
 * **Patch Operator**
 * **...** (this list keeps growing as I need to add new components to my demos)
 
-# First things first
+## First things first
 
-If you got a "naked cluster" with just the `kubeadmin` system user. You can start by enabling the `htpasswd` auth provider and creating the `admin` user by using the `bootstrap-scripts/enable-htpasswd-users.sh`.
+If you got a "naked cluster" with just the `kubeadmin` system user. You can start by enabling the `htpasswd` auth provider and creating the `admin` user by using the `scripts/enable-htpasswd-users.sh`.
 
 This script will create the `admin` user as `cluster-admin` and 5 other regular (non-admin) users.
 
@@ -93,7 +93,7 @@ To enable github users to authenticate on Openshift and DevSpaces using their Gi
 
 With the Github Org and oAuth Apps properly created, now is time to apply the required configuration in your cluster.
 
-**To make things easy I created a script to guide you in this configuration. Just execute the `bootstrap-scripts/setup-github-oauth.sh` and follow the instructions.**
+**To make things easy I created a script to guide you in this configuration. Just execute the `scripts/setup-github-oauth.sh` and follow the instructions.**
 
 > **NOTE:** After you create the github secrets the Patch Operator will catch the secret `ocp-github-app-credentials` (should be present in the `openshift-config` namespaces) and automatically configure the Cluster oAuth resource for you.
 
