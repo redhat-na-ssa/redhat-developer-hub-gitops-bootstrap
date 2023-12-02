@@ -10,7 +10,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/redhat-cop/gitops-catalog
+    repoURL: https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git
     targetRevision: peer-review
     path: components/operators/openshift-cert-manager-operator/operator/overlays/stable-v1
   destination:
