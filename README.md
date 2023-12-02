@@ -24,28 +24,28 @@ If you got a "naked cluster" with just the `kubeadmin` system user. You can star
 
 This script will create the `admin` user as `cluster-admin` and 5 other regular (non-admin) users.
 
-# Openshift GitOps installation and cluster bootstrap
+## Openshift GitOps installation and cluster bootstrap
 
 You can choose to install **Openshift GitOps** Operator manually from the Operator Hub using the Openshift Console (Administrator Perspective) or you can
 
  1. Authenticate as a `cluster-admin` on your cluster and execute
 
 ```shell
- ./bootstrap-scripts/cluster-boostrap.sh 
+ ./scripts/cluster-boostrap.sh
 ```
 
 This script will:
 
-* install Openshift GitOps (ArgoCD)
-* apply the ArgoCD root app
-* kickoff the cluster bootstrap
+* Install Openshift GitOps (ArgoCD) operator
+* Configure OpenShift GitOps (ArgoCD) instance
+* Bootstrap the ArgoCD app of app
 
 After applying this manifest go to the ArgoCD web console and watch the provisioning.
 > **IMPORTANT**: It will take a while to have all components provisioned and in healthy state. The provisioning happens in "waves". You may have to refresh od sync come apps in case they remain in unhealthy state.
 
 ![ArgoCD Root App tree](./docs/images/ArgoCD-root-app-tree.png)
 
-# Enabling Github oAuth provider
+## Enabling Github oAuth provider
 
 I use this repo to bootstrap an Openshift Cluster to showcase Openshift Dev Tooling and Developer workflows on top of Openshift Platform.
 For this I like to integrate Openshift and Openshift DevSpaces with Github.
@@ -60,12 +60,12 @@ To enable github users to authenticate on Openshift and DevSpaces using their Gi
   * Contact email: 'your email address'
   * Check  'My personal account' for the Organization type
 
-![](./docs/images/new-gb-personal-org.png)
+![image](./docs/images/new-gb-personal-org.png)
 
 > **IMPORTANT:** After creating your Personal Org, make sure you add members to it (including yourself)
 > Go to https://github.com/orgs/your-org-name/people and invite/add members
 
-![](./docs/images/gb-org-members.png)
+![image](./docs/images/gb-org-members.png)
 
 * Now go to https://github.com/settings/applications/new and create a new GitHub app
 * Fill the fields with:
@@ -75,7 +75,7 @@ To enable github users to authenticate on Openshift and DevSpaces using their Gi
 
 > **IMPORTANT:** <mark>Remember to copy the Client Id and the Client Secret values</mark>
 
-![](./docs/images/new-gb-ocp-oauth-app.png)
+![image](./docs/images/new-gb-ocp-oauth-app.png)
 
 ## Configuring Github oAuth for DevSpaces
 
@@ -87,7 +87,7 @@ To enable github users to authenticate on Openshift and DevSpaces using their Gi
 
 > **IMPORTANT:** <mark>Remember to copy the Client Id and the Client Secret values</mark>
 
-![](./docs/images/new-gb-devspaces-oauth-app.png)
+![image](./docs/images/new-gb-devspaces-oauth-app.png)
 
 ## Applying the Github oAuth configuration to your Openshift cluster
 
@@ -99,4 +99,4 @@ With the Github Org and oAuth Apps properly created, now is time to apply the re
 
 In a couple of seconds you should be able to access the cluster using Github as an Identity Provider.
 
-![](./docs/images/gb-oauth-openshift-console.png)
+![image](./docs/images/gb-oauth-openshift-console.png)

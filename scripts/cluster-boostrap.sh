@@ -53,14 +53,10 @@ echo "wait (5s) until the ArgoCD instance is ready..."
 # sleep 5
 wait_and_retry 6 10 "oc get argocd -n openshift-gitops"
 
-# echo
-# echo "apply additional ClusterRoleBindings to ArgoCD Controller Service Accounts"
-# oc apply -f $SCRIPT_RELATIVE_DIR_PATH/../openshift-gitops-install/rbac.yaml
-
 echo
 echo "bootstrapping the components though Openshift GitOps (ArgoCD)..."
 oc apply -k $SCRIPT_RELATIVE_DIR_PATH/../components/argocd/apps/overlays/dev-hub-demo
 
-argocdurl=$(oc get route openshift-gitops-server --ignore-not-found=true -n "openshift-gitops" -o jsonpath="{'https://'}{.status.ingress[0].host}")
+ARGOCD_URL=$(oc get route openshift-gitops-server --ignore-not-found=true -n "openshift-gitops" -o jsonpath="{'https://'}{.status.ingress[0].host}")
 echo
-echo "you can now access Openshift Gitops though: $argocdurl"
+echo "you can now access Openshift Gitops though: $ARGOCD_URL"
