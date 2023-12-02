@@ -1,0 +1,338 @@
+---
+# Source: openshift-config/templates/patch-operator-mutatingwebhook-sa-rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: null
+  name: mutatingwebhook-patcher
+  namespace: patch-operator
+  labels:
+    app.kubernetes.io/name: openshift-config
+---
+# Source: openshift-config/templates/default-service-account-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: default-service-account-secret
+  annotations:
+    kubernetes.io/service-account.name: "default"
+  labels:
+    app.kubernetes.io/name: openshift-config  
+type: kubernetes.io/service-account-token
+---
+# Source: openshift-config/templates/service-account-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: default-service-account
+  namespace: openshift-config
+  annotations:
+    kubernetes.io/service-account.name: default
+type: kubernetes.io/service-account-token
+---
+# Source: openshift-config/templates/user-workload-monitoring-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+  labels:
+    app.kubernetes.io/name: openshift-config
+data:
+  config.yaml: |
+    enableUserWorkload: true
+---
+# Source: openshift-config/templates/patch-operator-mutatingwebhook-sa-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: openshift-config
+  name: mutatingwebhookconfiguration-patcher
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - "admissionregistration.k8s.io"
+  resources:
+  - mutatingwebhookconfigurations
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+  - update
+---
+# Source: openshift-config/templates/patch-operator-mutatingwebhook-sa-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: openshift-config
+  name: mutatingwebhookconfiguration-patcher
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: mutatingwebhookconfiguration-patcher
+subjects:
+- kind: ServiceAccount
+  name: mutatingwebhook-patcher
+  namespace: patch-operator
+---
+# Source: openshift-config/templates/rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: 'openshift-config-default-cluster-admin'
+  labels:
+    app.kubernetes.io/name: openshift-config
+subjects:
+  - kind: ServiceAccount
+    name: default
+    # .Release.Namespace will render the namespace where the application being installed by helm.
+    namespace: sandbox
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: 'cluster-admin'
+---
+# Source: openshift-config/templates/build-configs.yaml
+apiVersion: config.openshift.io/v1
+kind: Build
+metadata:
+  annotations:
+    release.openshift.io/create-only: "true"
+  name: cluster
+  labels:
+    app.kubernetes.io/name: openshift-config
+spec:
+  buildDefaults:
+    resources:
+      requests:
+        cpu: 200m
+        memory: 500Mi
+---
+# Source: openshift-config/templates/patch-operator-mutatingwebhook.yaml
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: patch-operator-inject
+  labels:
+    app.kubernetes.io/name: openshift-config
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: patch-operator-controller-manager-service
+      namespace: patch-operator
+      path: /inject
+    caBundle: Cg==
+  failurePolicy: Fail
+  name: patch-operator-inject.redhatcop.redhat.io
+  rules: []
+  # - apiGroups:
+  #   - "dbaas.redhat.com"
+  #   apiVersions:
+  #   - v1alpha1
+  #   operations:
+  #   - CREATE
+  #   resources:
+  #   - dbaasconnections
+  sideEffects: None
+---
+# Source: openshift-config/templates/olmconfig-patch.yaml
+apiVersion: operators.coreos.com/v1
+kind: OLMConfig
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: ServerSideApply=true
+  name: cluster
+spec:
+  features:
+    disableCopiedCSVs: true
+---
+# Source: openshift-config/templates/patches.yaml
+# Documentation reference: https://github.com/redhat-cop/patch-operator
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: Patch
+metadata:
+  name: config-patches
+  namespace: openshift-config
+  labels:
+    app.kubernetes.io/name: openshift-config
+spec:
+  serviceAccountRef:
+    name: default
+  patches:
+    # pull-secret-service-account-patch:
+    #   targetObjectRef:
+    #     apiVersion: v1
+    #     kind: ServiceAccount
+    #     name: default 
+    #   sourceObjectRefs:
+    #   - apiVersion: v1
+    #     kind: Namespace
+    #     name: '{{ .metadata.namespace }}'   
+    #   patchTemplate: |
+    #     imagePullSecrets:
+    #     {{- if and (and (hasKey (index . 1).metadata.labels "app") (not (eq ((index . 1).metadata.labels.environment | toString) "build"))) (not (has (dict "name" "quay-pull-secret") (index . 0).imagePullSecrets)) }}      
+    #     {{ append (index . 0).imagePullSecrets (dict "name" "quay-pull-secret") | toYaml | indent 2 }}
+    #     {{- else }}
+    #     {{ (index . 0).imagePullSecrets | toYaml | indent 2 }}
+    #     {{- end }}
+    #   patchType: application/merge-patch+json  
+    # push-secret-pipeline-service-account-patch:
+    #   targetObjectRef:
+    #     apiVersion: v1
+    #     kind: ServiceAccount
+    #     name: pipeline
+    #   sourceObjectRefs:
+    #   - apiVersion: v1
+    #     kind: Namespace
+    #     name: '{{ .metadata.namespace }}'   
+    #   patchTemplate: |
+    #     imagePullSecrets:
+    #     {{- if and (and (hasKey (index . 1).metadata.labels "app") (eq ((index . 1).metadata.labels.environment | toString) "build")) (not (has (dict "name" "quay-push-secret") (index . 0).imagePullSecrets)) }}      
+    #     {{ append (index . 0).imagePullSecrets (dict "name" "quay-push-secret") | toYaml | indent 2 }}
+    #     {{- else }}
+    #     {{ (index . 0).imagePullSecrets | toYaml | indent 2 }}
+    #     {{- end }}                
+    #   patchType: application/merge-patch+json     
+    # gitlab-host-domain:
+    #   targetObjectRef:
+    #     apiVersion: apps.gitlab.com/v1beta1
+    #     kind: GitLab
+    #     name: gitlab
+    #   # these are the objects that will be watched and become part of the parameters of the patch template.
+    #   sourceObjectRefs:
+    #   - apiVersion: config.openshift.io/v1
+    #     kind: Ingress
+    #     name: cluster
+    #   patchTemplate: |
+    #     {{- $clusterDomain:= (index . 1).spec.domain -}}
+    #     spec:
+    #       chart:
+    #         values:
+    #           global:
+    #             hosts:
+    #               domain: gitlab-gitlab-system.{{ $clusterDomain }}
+    #   patchType: application/merge-patch+json
+    vault-console-link:
+      targetObjectRef:
+        apiVersion: console.openshift.io/v1
+        kind: ConsoleLink
+        name: vault-link
+      # these are the objects that will be watched and become part of the parameters of the patch template.
+      sourceObjectRefs:
+      - apiVersion: config.openshift.io/v1
+        kind: Ingress
+        name: cluster
+      patchTemplate: |
+        {{- $clusterDomain:= (index . 1).spec.domain -}}
+        spec:
+          href: https://vault-vault.{{ $clusterDomain }}
+      patchType: application/merge-patch+json
+    vault-route:
+      targetObjectRef:
+        apiVersion: route.openshift.io/v1
+        kind: Route
+        name: vault
+      # these are the objects that will be watched and become part of the parameters of the patch template.
+      sourceObjectRefs:
+      - apiVersion: config.openshift.io/v1
+        kind: Ingress
+        name: cluster
+      patchTemplate: |
+        {{- $clusterDomain:= (index . 1).spec.domain -}}
+        spec:
+          host: vault-vault.{{ $clusterDomain }}
+      patchType: application/merge-patch+json
+    github-ocp-oauth-provider:
+      targetObjectRef:
+        apiVersion: config.openshift.io/v1
+        kind: OAuth
+        name: cluster
+      # these are the objects that will be watched and become part of the parameters of the patch template.
+      sourceObjectRefs:
+      - apiVersion: v1
+        kind: Secret
+        name: ocp-github-app-credentials
+        namespace: openshift-config  
+      # This is the the template that will be evaluated. 
+      # The result must be a valid patch compatible with the requested type and expressed in yaml for readability. 
+      # The parameters passed to the template are the target object and then the all of the source object. 
+      # So if you want to refer to the target object in the template you can use this expression (index . 0). 
+      # Higher indexes refer to the sourceObjectRef array. 
+      # The template is expressed in golang template notation and supports the same functions as helm template.
+      # ---
+      # - Golang text template syntax: https://pkg.go.dev/text/template
+      # ---
+      patchTemplate: |
+        {{- $demoIdp:= dict "name" "github" "mappingMethod" "claim" "type" "GitHub" "github" (dict "teams" (list) "clientID" ((index . 1).data.client_id | b64dec) "clientSecret" (dict "name" "ocp-github-app-credentials") "organizations" (list ((index . 1).data.orgs | b64dec)) ) -}}
+        spec:
+          identityProviders:
+          {{- if (not (has $demoIdp (index . 0).spec.identityProviders)) }}
+        {{ append (index . 0).spec.identityProviders $demoIdp | toYaml | indent 4 }}
+          {{- else }}
+        {{ (index . 0).spec.identityProviders | toYaml | indent 4 }}
+          {{- end }}
+      # is the type of the json patch. The possible values are: 
+      #  application/json-patch+json, 
+      #  application/merge-patch+json and 
+      #  application/strategic-merge-patch+json. 
+      #If this annotation is omitted it defaults to strategic merge.
+      patchType: application/merge-patch+json
+    # argocd-admin-user-secret-for-tekton:
+    #   targetObjectRef:
+    #     apiVersion: v1
+    #     kind: Secret
+    #     name: argocd-env-secret
+    #   sourceObjectRefs:
+    #   - apiVersion: v1
+    #     kind: Secret
+    #     namespace: '{{ .metadata.namespace }}'
+    #     name: tenant-gitops-cluster
+    #   patchTemplate: | 
+    #     data:
+    #       ARGOCD_USERNAME: {{ "admin" | b64enc }}
+    #       ARGOCD_PASSWORD: {{ (index (index . 1).data "admin.password") }}
+    #   patchType: application/merge-patch+json         
+    # user-workload-grafana-app-patch:
+    #   targetObjectRef:
+    #     apiVersion: argoproj.io/v1alpha1
+    #     kind: Application
+    #     namespace: openshift-gitops
+    #     name: user-workload-grafana
+    #   sourceObjectRefs:
+    #   - apiVersion: v1
+    #     kind: Secret
+    #     namespace: openshift-config
+    #     name: default-service-account        
+    #   patchTemplate: |
+    #     spec:
+    #       source:
+    #         helm:
+    #           values: |
+    #             userworkload:
+    #               prometheus:
+    #                 bearertoken: {{ (index . 1).data.token | toString | b64dec }}
+    #   patchType: application/merge-patch+json
+    patch-operator-mutatingwebhookconfigurations:
+      targetObjectRef:
+        apiVersion: admissionregistration.k8s.io/v1
+        kind: MutatingWebhookConfiguration
+        name: patch-operator-inject
+      patchTemplate: '[{"op": "replace", "path": "/webhooks/0/clientConfig/caBundle", "value":"{{ (index (index . 1).data "olmCAKey") }}"}]'     
+      patchType: application/json-patch+json
+      sourceObjectRefs:
+      - apiVersion: v1
+        kind: Secret
+        name: patch-operator-controller-manager-service-cert
+        namespace: patch-operator
