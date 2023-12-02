@@ -11,7 +11,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/redhat-cop/gitops-catalog
-    targetRevision: main
+    targetRevision: peer-review
     path: components/operators/openshift-cert-manager-operator/operator/overlays/stable-v1
   destination:
     server: https://kubernetes.default.svc
