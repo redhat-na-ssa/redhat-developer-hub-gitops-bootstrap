@@ -46,7 +46,7 @@ wait_and_retry 10 10 "oc wait pods -n openshift-operators -l control-plane=gitop
 
 echo
 echo "now create an argocd instance"
-oc apply -f $SCRIPT_RELATIVE_DIR_PATH/../components/operators/openshift-gitops-operator/instance/overlays/custom
+oc apply -f $SCRIPT_RELATIVE_DIR_PATH/../components/overlays/openshift-gitops-instance
 
 echo
 echo "wait (5s) until the ArgoCD instance is ready..."
