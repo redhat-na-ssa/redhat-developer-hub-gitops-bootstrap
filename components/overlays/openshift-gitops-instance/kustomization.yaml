@@ -5,6 +5,7 @@ namespace: openshift-gitops
 
 resources:
   - ../../operators/openshift-gitops-operator/instance/overlays/default
+  - argocd.yaml
 
 patches:
   - target:
@@ -16,4 +17,4 @@ patches:
         value:
           - admin
           - opentlc-mgr
-  - path: argocd.yaml
+  - path: exclude-argocd-alpha.yaml
