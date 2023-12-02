@@ -3,3 +3,6 @@ kind: OperatorGroup
 metadata:
   name: gitlab-operator-kubernetes
   namespace: gitlab-system
+targetNamespaces:
+  - gitlab-system
+ 
