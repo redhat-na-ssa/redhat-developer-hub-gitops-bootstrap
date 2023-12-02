@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: openshift-gitops
 
 resources:
-  - ../../components/operators/openshift-gitops-operator/instance/overlays/default
+  - ../../operators/openshift-gitops-operator/instance/overlays/default
 
 patches:
   - target:
