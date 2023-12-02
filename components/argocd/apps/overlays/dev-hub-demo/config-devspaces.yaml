@@ -38,3 +38,6 @@ spec:
     name: devspaces
     jsonPointers:
     - /spec
+  - kind: DevWorkspaceOperatorConfig
+    jsonPointers:
+    - /metadata/labels    
