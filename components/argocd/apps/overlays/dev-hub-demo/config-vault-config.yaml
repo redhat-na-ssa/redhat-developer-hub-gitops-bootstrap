@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: vault-config
+  name: config-vault-config
   namespace: openshift-gitops
   finalizers:
   - resources-finalizer.argocd.argoproj.io
