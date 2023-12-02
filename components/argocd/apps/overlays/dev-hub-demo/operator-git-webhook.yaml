@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git
     targetRevision: peer-review
-    path: operators/git-webhook/kustomize
+    path: components/operators/git-webhook/kustomize
   destination:
     server: https://kubernetes.default.svc
     namespace: gitwebhook-operator
