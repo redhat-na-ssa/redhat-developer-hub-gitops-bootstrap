@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault
+  namespace: openshift-gitops
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git
+    targetRevision: peer-review
+    path: components/operators/hashicorp-vault/overlays/vault-config-operator
+    directory:
+      recurse: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vault
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - Validate=false
+    - SkipDryRunOnMissingResource=true
+    - CreateNamespace=false
+    - RespectIgnoreDifferences=true
+    - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s # the amount to back off. Default unit is seconds, but could also be a duration (e.g. "2m", "1h")
+        factor: 2 # a factor to multiply the base duration after each failed retry
+        maxDuration: 10m # the maximum amount of time allowed for the backoff strategy
+  ignoreDifferences:
+  - group: apps
+    kind: StatefulSet
+    name: vault
+    jsonPointers:
+    - /spec/template/spec
+  - group: admissionregistration.k8s.io
+    kind: MutatingWebhookConfiguration
+    name: vault-agent-injector-cfg
+    jsonPointers:
+    - /webhooks/0/clientConfig/caBundle
+  - group: console.openshift.io
+    kind: ConsoleLink
+    jsonPointers:
+    - /spec/href
