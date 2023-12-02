@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git
     targetRevision: peer-review
-    path: components/configs/kustomized/vault-config-operator
+    path: components/overlays/vault-config-operator
   destination:
     server: https://kubernetes.default.svc
     namespace: vault-config-operator
