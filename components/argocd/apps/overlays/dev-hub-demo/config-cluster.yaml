@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git
     targetRevision: peer-review
-    path: cluster-configs/openshift-config
+    path: components/configs/cluster/openshift-config
     helm:
       values: | 
         base_domain: {{ .Values.baseDomain }}
