@@ -36,17 +36,17 @@ oc whoami
 
 echo
 echo "Install Openshift Gitops (ArgoCD) Operator"
-oc apply -f $SCRIPT_RELATIVE_DIR_PATH/../openshift-gitops-install/operator.yaml
+oc apply -k $SCRIPT_RELATIVE_DIR_PATH/../components/operators/openshift-gitops-operator/operator/overlays/stable
 
 echo
 echo "wait until the Gitops operators is ready..."
 #sleep 30
 
-wait_and_retry 10 10 "oc wait pods -n openshift-operators -l control-plane=controller-manager --for condition=Ready"
+wait_and_retry 10 10 "oc wait pods -n openshift-operators -l control-plane=gitops-operator --for condition=Ready"
 
 echo
 echo "now create an argocd instance"
-oc apply -f $SCRIPT_RELATIVE_DIR_PATH/../openshift-gitops-install/argocd.yaml
+oc apply -f $SCRIPT_RELATIVE_DIR_PATH/../components/operators/openshift-gitops-operator/instance/overlays/custom
 
 echo
 echo "wait (5s) until the ArgoCD instance is ready..."
