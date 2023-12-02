@@ -7,6 +7,6 @@ resources:
   - operator-cert-manager.yaml
   - operator-devspaces.yaml
   - operator-git-webhook.yaml
-  - operator-gitlab.yaml
+  # - operator-gitlab.yaml
   - operator-openshift-pipelines.yaml
   - operator-patch-operator.yaml
