@@ -25,7 +25,8 @@ spec:
     - SkipDryRunOnMissingResource=true
     - CreateNamespace=false
     - RespectIgnoreDifferences=true
-    - ApplyOutOfSyncOnly=true    
+    - ApplyOutOfSyncOnly=true
+    - ServerSideApply=true
     retry:
       limit: 5
       backoff:
