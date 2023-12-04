@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+commonLabels:
+  demo: redhat-developer-hub-gitops
+
+resources:
+  - app-of-apps.yaml
+  - config-cluster.yaml
+  - config-vault-config.yaml
+  - config-vault.yaml
+  - config-devspaces.yaml
+  - operator-cert-manager.yaml
+  - operator-devspaces.yaml
+  - operator-git-webhook.yaml
+  - operator-gitlab.yaml
+  - operator-image-puller.yaml
+  - operator-openshift-pipelines.yaml
+  - operator-patch-operator.yaml
+  - operator-vault-config.yaml

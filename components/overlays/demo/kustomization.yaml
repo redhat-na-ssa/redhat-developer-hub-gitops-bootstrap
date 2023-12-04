@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../configs/cluster/openshift-config
+  # - ../../operators/devspaces/instance/overlays/timeout-12m
+  # - ../../operators/devspaces/operator/overlays/stable
+  # - ../../operators/git-webhook/kustomize
+  # - ../../operators/gitlab-operator-kubernetes/operator/overlays/stable
+  # - ../../operators/hashicorp-vault/kustomize/overlays/vault
+  # - ../../operators/hashicorp-vault/kustomize/overlays/vault-config
+  # - ../../operators/kubernetes-imagepuller-operator/operator/overlays/stable
+  # - ../../operators/openshift-cert-manager-operator/operator/overlays/stable-v1
+  # - ../../operators/openshift-pipelines-operator-rh/operator/overlays/latest
+  # - ../../operators/patch-operator/operator/overlays/alpha
+  # - ../../overlays/vault-config-operator

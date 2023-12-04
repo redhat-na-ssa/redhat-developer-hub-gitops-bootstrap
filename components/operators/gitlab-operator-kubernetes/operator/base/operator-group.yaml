@@ -1,0 +1,9 @@
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: gitlab-operator-kubernetes
+  namespace: gitlab-system
+spec:
+  targetNamespaces:
+    - gitlab-system
+ 

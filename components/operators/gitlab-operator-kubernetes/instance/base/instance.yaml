@@ -1,0 +1,24 @@
+apiVersion: apps.gitlab.com/v1beta1
+kind: GitLab
+metadata:
+  name: gitlab
+  namespace: gitlab-system
+spec:
+  chart:
+    version: 7.6.0
+    values:
+      certmanager-issuer:
+        email: rafaelcba@gmail.com
+      configureCertmanager:
+        install: false
+      global:
+        hosts:
+          domain: example.com
+        ingress:
+          annotations:
+            route.openshift.io/termination: edge
+            kubernetes.io/tls-acme: true
+          class: none
+          # configureCertmanager: true
+      nginx-ingress:
+        enabled: false
