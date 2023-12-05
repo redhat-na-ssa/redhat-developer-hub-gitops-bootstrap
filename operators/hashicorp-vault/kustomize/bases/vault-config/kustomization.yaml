@@ -5,5 +5,3 @@ namespace: vault-admin
 resources:
   - ./namespace.yaml
   - ./secret-engines/
-  # - ./kube-auth-engine-config.yaml
-  # - ./kube-auth-engine-mount.yaml

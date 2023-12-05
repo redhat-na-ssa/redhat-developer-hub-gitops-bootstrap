@@ -41,6 +41,10 @@ After applying this manifest go to the ArgoCD web console and watch the provisio
 
 ![ArgoCD Root App tree](./docs/images/ArgoCD-root-app-tree.png)
 
+# Red Hat Developer Hub workflow (with Secret Management automation)
+
+![DevHub Workflow](./docs/images/Red_Hat_DeveloperHub_Mgtm_Secrets_with_Hashicorp_Vault.png)
+
 # Enabling Github oAuth provider
 I use this repo to bootstrap an Openshift Cluster to showcase Openshift Dev Tooling and Developer workflows on top of Openshift Platform.
 For this I like to integrate Openshift and Openshift DevSpaces with Github. 

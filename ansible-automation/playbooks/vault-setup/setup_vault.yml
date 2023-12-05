@@ -114,7 +114,7 @@
     validate_certs: false
     data:
       app_id: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_APP_ID') }}"
-      org: "{{ lookup('ansible.builtin.env', 'GITHUB_ORGANIZATION') }}"
+      org: "{{ lookup('ansible.builtin.env', 'GITHUB_ORG') }}"
       # 'key' is required by the vault-config-operator
       key: "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'GITHUB_APP_PRIVATE_KEY_FILE')) }}"
     token: "{{ vault_token }}"
