@@ -16,7 +16,7 @@ patches:
         value: "redhat-na-ssa" #replace by your Github Org name here!!!
       - op: replace
         path: /metadata/name
-        value: "redhat-na-ssa" #replace by your Github Org name here!!!
+        value: "redhat-na-ssa" #replace by your Github Org here!!!
     target:
       kind: GitHubSecretEngineRole
   - patch: |-
@@ -28,9 +28,10 @@ patches:
   - patch: |-
       - op: replace
         path: /spec/namespaceName
-        value: "redhat-na-ssa" #replace by your Quay Organization/namespace here!!!
+        value: "redhat_na_ssa" #replace by your Quay Organization/namespace here!!!
       - op: replace
         path: /metadata/name
-        value: "redhat_na_ssa" #replace by your Quay Organization/namespace here!!!
+        # this value must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character
+        value: "redhat-na-ssa" #replace by your Quay Organization/namespace here!!!
     target:
       kind: QuaySecretEngineRole
