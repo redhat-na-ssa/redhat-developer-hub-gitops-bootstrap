@@ -15,6 +15,7 @@
     - name: Retrieve Ingress config
       kubernetes.core.k8s_info:
         api_version: config.openshift.io/v1
+        
         kind: Ingress
         name: cluster
       register: r_ingress_config

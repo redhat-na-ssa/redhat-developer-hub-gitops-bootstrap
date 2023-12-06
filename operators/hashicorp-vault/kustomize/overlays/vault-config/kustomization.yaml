@@ -14,6 +14,9 @@ patches:
       - op: replace
         path: /spec/organizationName
         value: "redhat-na-ssa" #replace by your Github Org name here!!!
+      - op: replace
+        path: /metadata/name
+        value: "redhat-na-ssa" #replace by your Quay Organization/namespace here!!!
     target:
       kind: GitHubSecretEngineRole
   - patch: |-
@@ -25,6 +28,9 @@ patches:
   - patch: |-
       - op: replace
         path: /spec/namespaceName
+        value: "redhat_na_ssa" #replace by your Quay Organization/namespace here!!!
+      - op: replace
+        path: /metadata/name
         value: "redhat_na_ssa" #replace by your Quay Organization/namespace here!!!
     target:
       kind: QuaySecretEngineRole
