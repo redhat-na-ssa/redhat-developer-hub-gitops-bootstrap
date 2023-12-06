@@ -1,27 +1,41 @@
-#!/bin/sh
+#!/bin/bash
 clear
 
-readonly SCRIPT_RELATIVE_DIR_PATH=$(dirname -- "${BASH_SOURCE}")
+SCRIPT_RELATIVE_DIR_PATH=$(dirname -- "${BASH_SOURCE}")
+SCRATCH="${SCRIPT_RELATIVE_DIR_PATH}"/../scratch
+
+mkdir -p "${SCRATCH}"
 #echo " This script is located at: $( dirname -- "${BASH_SOURCE}" ) "
 #echo " This script is located at: $( dirname -- "$(readlink -f "${BASH_SOURCE}")" ) "
 
-oc whoami
-[[ $? -gt 0 ]] && echo "💀 make sure you are logged in your Cluster with an cluster-admin user first! oc login..." && exit 1
+# oc whoami
+# [[ $? -gt 0 ]] && echo "💀 make sure you are logged in your Cluster with an cluster-admin user first! oc login..." && exit 1
+
+create_htpasswd(){
+  USERNAME=${1:-admin}
+  PASSWORD=${2:-openshift}
+
+  touch "${SCRATCH}"/htpasswd-users
+  htpasswd -B -b "${SCRATCH}"/htpasswd-users "${USERNAME}" "${PASSWORD}"
+}
 
 echo
 echo "creating admin and other 5 regular users..."
 #switch to this if you wanna a random pwd for the admin user!
 #readonly RANDOM_ADMIN_PWD=$(LC_ALL=C tr -dc 'A-Za-z0-9!"#$%&'\''()*+,-./:;<=>?@[\]^_`{|}~' </dev/urandom | head -c 13 ; echo)
-readonly RANDOM_ADMIN_PWD=openshift
-htpasswd -B -b -c ${SCRIPT_RELATIVE_DIR_PATH}/htpasswd-users admin $RANDOM_ADMIN_PWD
-htpasswd -B -b ${SCRIPT_RELATIVE_DIR_PATH}/htpasswd-users user1 openshift
-htpasswd -B -b ${SCRIPT_RELATIVE_DIR_PATH}/htpasswd-users user2 openshift
-htpasswd -B -b ${SCRIPT_RELATIVE_DIR_PATH}/htpasswd-users user3 openshift
-htpasswd -B -b ${SCRIPT_RELATIVE_DIR_PATH}/htpasswd-users user4 openshift
-htpasswd -B -b ${SCRIPT_RELATIVE_DIR_PATH}/htpasswd-users user5 openshift
+
+create_htpasswd admin
+create_htpasswd user1 openshift
+create_htpasswd user2 openshift
+create_htpasswd user3 openshift
+create_htpasswd user4 openshift
+create_htpasswd user5 openshift
+
+exit
+
 
 oc delete secret htpasswd-secret --ignore-not-found=true -n openshift-config
-oc create secret generic htpasswd-secret --from-file=htpasswd=${SCRIPT_RELATIVE_DIR_PATH}/htpasswd-users -n openshift-config
+oc create secret generic htpasswd-secret --from-file=htpasswd="${SCRIPT_RELATIVE_DIR_PATH}"/htpasswd-users -n openshift-config
 oc replace -f - <<EOF
 apiVersion: config.openshift.io/v1
 kind: OAuth
@@ -39,7 +53,7 @@ EOF
 
 oc adm policy add-cluster-role-to-user cluster-admin admin
 oc adm groups new cluster-admins admin
-rm -f ${SCRIPT_RELATIVE_DIR_PATH}/htpasswd-users
+rm -f "${SCRIPT_RELATIVE_DIR_PATH}"/htpasswd-users
 
 echo
 echo "in a couple of minutes you should be able to login with admin user using [admin/$RANDOM_ADMIN_PWD] credentials!"
