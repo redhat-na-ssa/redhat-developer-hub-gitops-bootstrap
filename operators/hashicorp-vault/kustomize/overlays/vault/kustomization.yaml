@@ -65,12 +65,15 @@ helmCharts:
           - name: vault-root-token
             secret:
               secretName: vault-init
-              optional: true  
+              optional: true
+          # - name: custom-ca-bundle
+          #   secretName: custom-ca-bundle
 
         volumeMounts:
           - mountPath: /usr/local/libexec/vault
             name: plugins
-            readOnly: false 
+            readOnly: false
+          # - mountPath: /etc/pki/ca-trust/source/anchors #then, run update-ca-trust inside the container
 
         standalone:
           enabled: true
@@ -182,6 +185,8 @@ helmCharts:
             - /bin/bash
             - -c
             - | 
+                echo "update the system ca bundles..."
+                update-ca-trust
                 while true; do
                   sleep 5
                   if [[ $(vault status | grep "Initialized" | grep "false") ]]; then
