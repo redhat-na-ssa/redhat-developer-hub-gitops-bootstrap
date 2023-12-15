@@ -26,3 +26,4 @@ hs_err_pid*
 *.ignore
 bootstrap-scripts/htpasswd-users
 .vscode/
+.venv/
