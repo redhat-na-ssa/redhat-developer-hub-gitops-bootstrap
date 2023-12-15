@@ -329,10 +329,12 @@ upstream:
       - dynamic-plugins-root/app-config.dynamic-plugins.yaml
     command: []
     image:
-      pullSecrets:
-        - rhdh-pull-secret
-      registry: quay.io
+      #pullSecrets:
+      #  - rhdh-pull-secret
+      registry: registry.redhat.io
       repository: rhdh/rhdh-hub-rhel9
+      #registry: quay.io
+      #repository: rhdh/rhdh-hub-rhel9
       tag: '{{ rhdh_image_version }}'
     extraEnvVars:
       - name: POSTGRESQL_ADMIN_PASSWORD

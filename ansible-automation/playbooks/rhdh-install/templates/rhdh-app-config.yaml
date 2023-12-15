@@ -87,9 +87,9 @@ data:
         - group: 'tekton.dev'
           apiVersion: 'v1beta1'
           plural: 'taskruns'
-        - group: 'org.eclipse.che'
-          apiVersion: 'v2'
-          plural: 'checlusters'
+        #- group: 'org.eclipse.che'
+        #  apiVersion: 'v2'
+        #  plural: 'checlusters'
         - group: 'route.openshift.io'
           apiVersion: 'v1'
           plural: 'routes'
@@ -115,10 +115,3 @@ data:
     #         frequency: { seconds: 10 }
     #         # supports ISO duration, "human duration" as used in code
     #         timeout: { seconds: 60 }
-
-    # enabled:
-    #   github: true
-    #   githubOrg: true
-    #   kubernetes: true
-    #   argocd: true
-    #   # ocm: true

@@ -21,7 +21,7 @@ commands:
         kind: build
         isDefault: true
       component: tooling-container
-  - id: oc-install
+  - id: tools-install
     exec:
       commandLine: '/usr/local/bin/ansible-playbook ${PROJECT_SOURCE}/ansible-automation/playbooks/install_oc.yml'
       workingDir: ${PROJECT_SOURCE}
@@ -41,4 +41,4 @@ commands:
 events:
   postStart:
     - "ansible-prereqs"
-    - "oc-install"
+    - "tools-install"

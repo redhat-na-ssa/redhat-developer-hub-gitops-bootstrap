@@ -1,0 +1,76 @@
+- name: Register an external cluster to RHDH 
+  hosts: localhost
+  gather_facts: false
+  vars:
+    idp_namespace: "rhdh"
+    idp_instance_name: "rhdh"
+  vars_prompt:
+    - name: external_cluster_name
+      prompt: What is the external cluster name?
+      private: false
+
+  tasks:
+    # - name: Retrieve Ingress config
+    #   kubernetes.core.k8s_info:
+    #     api_version: config.openshift.io/v1
+    #     kind: Ingress
+    #     name: cluster
+    #   register: r_ingress_config
+
+    - name: Set OpenShift Cluster Domain and API URLs
+      ansible.builtin.set_fact:
+        external_k8s_auth_context: "{{ lookup('ansible.builtin.env', 'EXTERNAL_K8S_AUTH_CONTEXT') }}"
+
+    - name: Ensure all the env var are set
+      ansible.builtin.fail:
+        msg: "'EXTERNAL_K8S_AUTH_CONTEXT' env var not set!"
+      when: >
+        (external_k8s_auth_context == "")
+
+    - name: Retrieve Infrastructure config
+      kubernetes.core.k8s_info:
+        context: "{{ external_k8s_auth_context }}"
+        api_version: config.openshift.io/v1
+        kind: Infrastructure
+        name: cluster
+      register: r_infra_config
+
+    - name: Set OpenShift Cluster Domain and API URLs
+      ansible.builtin.set_fact:
+        external_cluster_api_url: "{{ r_infra_config.resources[0].status.apiServerURL }}"
+
+    - name: External cluster address notice
+      ansible.builtin.debug:
+        msg: "Creating cluster auth resources at [ {{ external_cluster_api_url }} ]..."
+
+    - name: Create the idp namespace
+      kubernetes.core.k8s:
+        context: "{{ external_k8s_auth_context }}"
+        state: present
+        definition: "{{ lookup('template', 'rhdh-namespace.yaml') | from_yaml }}"
+
+    - name: Create resources for the Kubernetes plugin
+      kubernetes.core.k8s:
+        context: "{{ external_k8s_auth_context }}"
+        state: present
+        template:
+          path: "rhdh-k8s-plugin-resources.yaml"
+
+    - name: Get the k8s plugin token
+      kubernetes.core.k8s_info:
+        context: "{{ external_k8s_auth_context }}"
+        api_version: v1
+        kind: Secret
+        name: "rhdh-k8s-plugin-secret-token"
+        namespace: "{{ idp_namespace }}"
+      register: external_k8s_secret
+
+    - name: Extract k8s plugin secret token
+      ansible.builtin.set_fact:
+        external_k8s_sa_token: "{{ external_k8s_secret.resources[0].data.token | b64decode }}"
+
+    - name: Create secret for the external cluster Kubernetes in the RHDH cluster
+      kubernetes.core.k8s:
+        state: present
+        template:
+          path: "rhdh-external-k8s-plugin-secret.yaml"

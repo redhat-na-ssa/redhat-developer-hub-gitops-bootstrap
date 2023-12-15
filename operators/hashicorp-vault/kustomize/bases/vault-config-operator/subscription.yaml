@@ -16,5 +16,18 @@ spec:
       value: <vault-addr>
     - name: VAULT_SKIP_VERIFY
       value: "true"
-
-
+    # when using custom CA certs
+    # - name: VAULT_CACERT
+    #   value: /vault-ca/ca.crt
+    # - name: VAULT_TOKEN
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: $JWT_SECRET
+    #       key: token
+    # volumes:
+    # - name: vault-ca
+    #   configMap:
+    #     name: int-ca
+    # volumeMounts:
+    # - mountPath: /vault-ca
+    #   name: vault-ca

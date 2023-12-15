@@ -49,15 +49,29 @@ helmCharts:
           repository: registry.connect.redhat.com/hashicorp/vault
 
         extraEnvironmentVars:
+          VAULT_LOG_LEVEL: debug
+          VAULT_SKIP_VERIFY: true
+          # When using the Cluster's CA
           VAULT_CACERT: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
+          # Using an in-house (self-signed) intermediate CA
+          # VAULT_CACERT: /etc/vault-tls/vault-certs/ca.crt
+          #VAULT_TLS_SERVER_NAME:
 
         route:
           enabled: true
           host: ""
+          # tls will be passed directly to the route's TLS config, which
+          # can be used to configure other termination methods that terminate
+          # TLS at the router
+          tls:
+            termination: passthrough
 
         extraVolumes:
           - type: secret
-            name: vault-server-tls # Matches the ${SECRET_NAME} from above
+            name: vault-server-tls
+          # - type: secret
+          #   name: vault-certs
+          #   path: /etc/vault-tls
 
         volumes:    
           - name: plugins
@@ -82,9 +96,16 @@ helmCharts:
             listener "tcp" {
               address = "[::]:8200"
               cluster_address = "[::]:8201"
+
+              # when using the internal Cluster's CA certs
               tls_cert_file = "/vault/userconfig/vault-server-tls/tls.crt"
               tls_key_file  = "/vault/userconfig/vault-server-tls/tls.key"
               tls_client_ca_file = "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
+
+              # when using custom certs...
+              # tls_cert_file = "/etc/vault-tls/vault-certs/tls.crt"
+              # tls_key_file  = "/etc/vault-tls/vault-certs/tls.key"
+              # tls_client_ca_file = "/etc/vault-tls/vault-certs/ca.crt"
             }
 
             storage "file" {
@@ -96,6 +117,7 @@ helmCharts:
         service: 
           annotations:
             service.beta.openshift.io/serving-cert-secret-name: vault-server-tls
+            # service.beta.openshift.io/serving-cert-secret-name: vault-certs
 
         extraInitContainers:
           # # This example installs a plugin pulled from github into the /usr/local/libexec/vault/oauthapp folder,

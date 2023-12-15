@@ -1,5 +1,5 @@
 ---
-- name: Create
+- name: Download tools
   hosts: localhost
   connection: local
   gather_facts: false
@@ -18,12 +18,18 @@
       ansible.builtin.file:
         path: "{{ molecule_user_home_dir }}/bin"
         state: directory
-        mode: 0770
+        mode: '0770'
     
     - name: Download oc binary from OCP downloads svc endpoint
       ansible.builtin.get_url:
         url: http://downloads.openshift-console.svc.cluster.local/amd64/linux/oc
         dest: "{{ molecule_user_home_dir }}/bin/oc"
+        mode: '0770'
+
+    - name: Download helm binary from mirror.openshift.com
+      ansible.builtin.get_url:
+        url: https://developers.redhat.com/content-gateway/file/pub/openshift-v4/clients/helm/3.12.1/helm-linux-amd64
+        dest: "{{ molecule_user_home_dir }}/bin/helm"
         mode: '0770'
     
     - name: Add another bin dir to system-wide $PATH.

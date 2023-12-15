@@ -119,15 +119,14 @@
 
 - name: Deploy RHDH Helm Chart with values loaded from template
   ansible.builtin.shell: |
-    # helm upgrade -i developer-hub \
-    #   -f "/tmp/{{ rhdh_helm_values_file }}" \
-    #   openshift-helm-charts/redhat-developer-hub \
-    #   --namespace "{{ idp_namespace }}"
-    helm upgrade -i developer-hub -n "{{ idp_namespace }}" \
-    -f "/tmp/{{ rhdh_helm_values_file }}" \
-    https://github.com/rhdh-bot/openshift-helm-charts/raw/developer-hub-1.0-163-CI/charts/redhat/redhat/developer-hub/1.0-163-CI/developer-hub-1.0-163-CI.tgz
+    helm repo update
+    helm upgrade -i developer-hub \
+      -f "/tmp/{{ rhdh_helm_values_file }}" \
+      openshift-helm-charts/redhat-developer-hub \
+      --version "{{ rhdh_helm_chart_version }}" \
+      --namespace "{{ idp_namespace }}"
 
-# - name: Deploy RHDH chart on 0.2.0 with values loaded from template
+# - name: Deploy RHDH chart on 1.0.0 with values loaded from template
 #   kubernetes.core.helm:
 #     name: developer-hub
 #     chart_ref: openshift-helm-charts/redhat-developer-hub
@@ -139,10 +138,10 @@
 #     purge: false
 #     # force: true
 #     # replace: true
-#     # update_repo_cache: true
+#     update_repo_cache: true
 #     # disable_hook: true
 #     # set_values:
 #     #   - value: global.foo="bar"
 #     #     value_type: string
-#     values: "{{ lookup('template', 'rhdh-helm-values.yaml') | from_yaml }}"
+#     values: "{{ lookup('template', '{{ rhdh_helm_values_file }}') | from_yaml }}"
 

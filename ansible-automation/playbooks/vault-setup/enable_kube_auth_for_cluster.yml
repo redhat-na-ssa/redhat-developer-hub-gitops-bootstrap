@@ -1,0 +1,115 @@
+- name: Enable Vault Kube Auth for a new Cluster
+  hosts: localhost
+  gather_facts: false
+  vars:
+    idp_namespace: "rhdh"
+  vars_prompt:
+    - name: vault_token
+      prompt: Enter Vault access token
+      private: true
+
+  tasks:
+    - name: Set OpenShift Cluster Domain and API URLs
+      ansible.builtin.set_fact:
+        external_k8s_auth_context: "{{ lookup('ansible.builtin.env', 'EXTERNAL_K8S_AUTH_CONTEXT') }}"
+
+    - name: Ensure all the env var are set
+      ansible.builtin.fail:
+        msg: "'EXTERNAL_K8S_AUTH_CONTEXT' env var not set!"
+      when: >
+        (external_k8s_auth_context == "")
+
+    - name: Retrieve Infrastructure config
+      kubernetes.core.k8s_info:
+        context: "{{ external_k8s_auth_context }}"
+        api_version: config.openshift.io/v1
+        kind: Infrastructure
+        name: cluster
+      register: r_infra_config
+
+    - name: Set OpenShift Cluster Domain and API URLs
+      ansible.builtin.set_fact:
+        external_cluster_api_url: "{{ r_infra_config.resources[0].status.apiServerURL }}"
+
+    - name: External cluster address notice
+      ansible.builtin.debug:
+        msg: "Creating cluster auth resources at [ {{ external_cluster_api_url }} ]..."
+
+    - name: Create the idp namespace
+      kubernetes.core.k8s:
+        context: "{{ external_k8s_auth_context }}"
+        state: present
+        definition: "{{ lookup('template', 'rhdh-namespace.yaml') | from_yaml }}"
+
+    - name: Login to vault
+      ansible.builtin.shell: |
+        oc exec vault-0 -c vault -n {{ vault_namespace }} -- vault login -tls-skip-verify {{ vault_token }}
+
+    # From this guide https://developer.hashicorp.com/vault/docs/auth/kubernetes#use-the-vault-client-s-jwt-as-the-reviewer-jwt
+    # it is only required if using 'the Vault client's JWT as the reviewer JWT'
+    - name: Create vault-auth SA resources
+      k8s:
+        state: present
+        definition: "{{ lookup('file', item) | from_yaml }}"
+      loop:
+        #- vault-auth-service-account.yml
+        - vault-cluster-role-binding-role-token-review.yml
+        #- vault-auth-secret.yml
+
+    - name: Create vault-admin policy
+      ansible.builtin.shell: |
+        oc exec vault-0 -c vault -n {{ vault_namespace }} -- bash -c 'rm -rf /tmp/adm-policy.hcl'
+        oc exec vault-0 -c vault -n {{ vault_namespace }} -- bash -c 'echo path \"/*\" >> /tmp/adm-policy.hcl'
+        oc exec vault-0 -c vault -n {{ vault_namespace }} -- \
+        bash -c 'echo {  capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\", \"sudo\"] >> /tmp/adm-policy.hcl'
+        oc exec vault-0 -c vault -n {{ vault_namespace }} -- bash -c 'echo } >> /tmp/adm-policy.hcl'
+        oc exec vault-0 -c vault -n {{ vault_namespace }} -- bash -c \
+        'vault policy write -address https://vault.vault.svc:8200 vault-admin /tmp/adm-policy.hcl'
+
+    - name: Enable kubernetes auth for the Dev Cluster
+      ansible.builtin.shell: |
+        export SA_SECRET_NAME=$(oc get secrets -n vault-admin --output=json \
+        | jq -r '.items[].metadata | select(.name|startswith("default-token")).name')
+        export SA_JWT_TOKEN=$(oc get secret $SA_SECRET_NAME -n vault-admin \
+        --output 'go-template={{ "{{" }} .data.token {{ "}}" }}' | base64 --decode)
+        export SA_CA_CRT=$(oc config view --raw --minify --flatten \
+        --output 'jsonpath={.clusters[].cluster.certificate-authority-data}' | base64 --decode)
+        export K8S_HOST=$(oc config view --raw --minify --flatten \
+        --output 'jsonpath={.clusters[].cluster.server}')
+
+        oc exec vault-0 -c vault -n {{ vault_namespace
+          }} -- vault auth enable -address https://vault.vault.svc:8200 -path {{ vault_cluster_name }}-admin kubernetes
+
+        oc exec vault-0 -c vault -n {{ vault_namespace
+          }} -- vault write -address https://vault.vault.svc:8200 auth/{{ vault_cluster_name }}-admin/config \
+        token_reviewer_jwt="$SA_JWT_TOKEN" \
+        kubernetes_host="$K8S_HOST" \
+        kubernetes_ca_cert="$SA_CA_CRT" \
+        issuer="https://kubernetes.default.svc.cluster.local"
+
+    - name: Create vault-admin Role for Kubernetes authentication
+      ansible.builtin.shell: |
+        oc exec vault-0 -c vault -n {{ vault_namespace
+          }} -- vault write -address https://vault.vault.svc:8200 auth/{{ vault_cluster_name }}-admin/role/vault-admin \
+        bound_service_account_names=default \
+        bound_service_account_namespaces=vault-admin \
+        token_policies=vault-admin \
+        ttl=160h
+
+        export SA_SECRET_NAME=$(oc get secrets -n vault-admin --output=json \
+        | jq -r '.items[].metadata | select(.name|startswith("default-token")).name')
+        export SA_JWT_TOKEN=$(oc get secret $SA_SECRET_NAME -n vault-admin \
+        --output 'go-template={{ "{{" }} .data.token {{ "}}" }}' | base64 --decode)
+
+        #try to login into Vault using the Kubernetes auth endpoint and the default Service Account...
+        oc exec vault-0 -c vault -n vault -- \
+        vault write -address https://vault.vault.svc:8200 auth/{{ vault_cluster_name }}-admin/login role=vault-admin jwt=$SA_JWT_TOKEN
+
+        #stores the Vault accessor name into a ConfigMap
+        accessor=$(oc exec vault-0 -c vault -n vault -- \
+        vault read -address https://vault.vault.svc:8200 -format json sys/auth \
+        | jq -r '.data["{{ vault_cluster_name }}-admin/"].accessor')
+
+        oc delete configmap kubeauth-accessor -n {{ vault_namespace }} --ignore-not-found=true
+        oc create configmap kubeauth-accessor -n {{ vault_namespace }} --from-literal=accessor=${accessor}
+
