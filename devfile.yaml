@@ -23,7 +23,7 @@ commands:
       component: tooling-container
   - id: tools-install
     exec:
-      commandLine: '/usr/local/bin/ansible-playbook ${PROJECT_SOURCE}/ansible-automation/playbooks/install_oc.yml'
+      commandLine: '/usr/local/bin/ansible-playbook ${PROJECT_SOURCE}/ansible-automation/playbooks/install_tools.yml'
       workingDir: ${PROJECT_SOURCE}
       group:
         kind: build
@@ -40,5 +40,5 @@ commands:
       component: tooling-container
 events:
   postStart:
-    # - "ansible-prereqs"
-    - tools-install
+    - "ansible-prereqs"
+    - "tools-install"
