@@ -15,7 +15,26 @@ commands:
     exec:
       commandLine: |
         /usr/local/bin/ansible-galaxy collection install community.hashi_vault
-        /usr/local/bin/pip install hvac
+        /usr/bin/pip install hvac
+        mkdir ${PROJECT_SOURCE}/.ignored
+        cat <<EOF > ${PROJECT_SOURCE}/.ignored/env.sh
+        export GITHUB_APP_APP_ID=
+        export GITHUB_APP_CLIENT_ID=
+        export GITHUB_APP_CLIENT_SECRET=
+        export GITHUB_APP_PRIVATE_KEY_FILE=${PROJECT_SOURCE}/.ignored/private-key.pem
+        export GITHUB_PRIVATE_KEY=$(< $GITHUB_APP_PRIVATE_KEY_FILE)
+        export GITHUB_ORG=
+        export GITHUB_ORG_URL=https://github.com/your-org-name-here
+        export GITHUB_APP_WEBHOOK_URL=https://developer-hub-rhdh.apps.your-cluster-domain-here/
+        export GITHUB_APP_WEBHOOK_SECRET=
+        export QUAY_ORG=
+        export QUAY_USER=
+        export QUAY_TOKEN=
+        export RHDH_REGISTRY_PULL_SECRET=
+        EOF
+        cat <<EOF > ${PROJECT_SOURCE}/.ignored/private-key.pem
+        PASTE THE CONTENT OF YOUR GITHUB APP PRIVATE KEY (PEM FILE) HERE
+        EOF
       workingDir: ${PROJECT_SOURCE}
       group:
         kind: build

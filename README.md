@@ -45,7 +45,7 @@ After applying this manifest go to the ArgoCD web console and watch the provisio
 
 If you don't have a Linux/MacOs box with access to your Openshift cluster you can create a Dev Workspace on Openshift DevSpaces and use it to change files and run the oc CLI and execute the Ansible playbooks in this sections. To do so go to the DevSpaces Dashboard and create a new workspace pointing to this repo. This repo contains a `devfile.yaml` ready for running Ansible.
 
-**Remember to log in Openshift using `oc` CLI with a `cluster-admin` user before you run Ansible!!! ** When running the playbooks inside a DevSpaces workspace you may need to export `K8S_AUTH_CONTEXT=cluster-admin-context-name`, so Ansible can use the correct logged-in user to connect to Openshift. 
+**Remember to log in Openshift using `oc` CLI with a `cluster-admin` user before you run Ansible!!! ** When running the playbooks inside a DevSpaces workspace you may need to export `K8S_AUTH_CONTEXT=cluster-admin-context-name`, so Ansible can use the correct logged-in user to connect to Openshift. Use `oc config get-contexts` to get the context name where you logged as cluster admin.
 
 > Its recommended to create and use a Python virtual environment to properly run these playbooks (not needed if using DevSpaces workspace!)
 
