@@ -1,0 +1,7 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: vault-admin
+  labels:
+    kubernetes.io/metadata.name: vault-admin
+spec: {}

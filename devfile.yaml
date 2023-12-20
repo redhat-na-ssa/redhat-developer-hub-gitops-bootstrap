@@ -40,5 +40,5 @@ commands:
       component: tooling-container
 events:
   postStart:
-    - "ansible-prereqs"
-    - "tools-install"
+    # - "ansible-prereqs"
+    - tools-install
