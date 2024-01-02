@@ -55,19 +55,17 @@ data:
 
     proxy:
       endpoints:  
-      '/quay/api':
-            target: ${QUAY_URL}
-            headers:
-              X-Requested-With: 'XMLHttpRequest'
-              Authorization: "Bearer ${QUAY_BEARER_TOKEN}"
-            changeOrigin: true
-            # Change to "false" in case of using self hosted quay instance with a self-signed certificate
-            secure: false
-
+        /quay/api:
+          target: ${QUAY_URL}
+          headers:
+            X-Requested-With: "XMLHttpRequest"
+            Authorization: "Bearer ${QUAY_BEARER_TOKEN}"
+          changeOrigin: true
+          # Change to "false" in case of using self hosted quay instance with a self-signed certificate
+          secure: false
     quay:
       # The UI url for Quay, used to generate the link to Quay
       uiUrl: ${QUAY_URL}
-
     kubernetes:
       clusterLocatorMethods:
         - clusters:
@@ -115,3 +113,17 @@ data:
     #         frequency: { seconds: 10 }
     #         # supports ISO duration, "human duration" as used in code
     #         timeout: { seconds: 60 }
+    #techdocs:
+    #  builder: external
+    #  generator:
+    #    runIn: local
+    #  publisher:
+    #    awsS3:
+    #      bucketName: ${S3_BUCKET_NAME}
+    #      credentials:
+    #        accessKeyId: ${S3_ACCESS_KEY}
+    #        secretAccessKey: ${S3_SECRET_ACCESS_KEY}
+    #      endpoint: ${S3_ENDPOINT_URL}
+    #      region: ${S3_REGION}
+    #      s3ForcePathStyle: true
+    #    type: awsS3

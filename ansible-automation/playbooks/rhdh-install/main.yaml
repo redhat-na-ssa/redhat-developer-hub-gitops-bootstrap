@@ -8,7 +8,7 @@
     # Dev Preview
     # rhdh_helm_chart_version: "0.2.0"
     # rhdh_image_version: "1.0-88"
-    rhdh_helm_chart_version: "1.0.0"
+    rhdh_helm_chart_version: "1.0.0-1"
     rhdh_image_version: "1.0"
     rhdh_helm_values_file: "rhdh-10ga-helm-values.yaml"
     git_system: "github"
