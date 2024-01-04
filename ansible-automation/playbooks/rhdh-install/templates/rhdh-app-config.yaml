@@ -8,6 +8,37 @@ data:
   app-config-rhdh.yaml: |
     app:
       title : Red Hat Developer Hub
+    backend:
+      # auth:
+      #   keys:
+      #   - secret: ${BACKEND_SECRET}
+      # baseUrl: "https://rhdh.{{ apps_cluster_domain }}"
+      # cors:
+      #   credentials: true
+      #   methods:
+      #   - GET
+      #   - POST
+      #   - PUT
+      #   - DELETE
+      #   origin: "https://rhdh.{{ apps_cluster_domain }}"
+      csp:
+        connect-src:
+        - '''self'''
+        - 'http:'
+        - 'https:'
+      # database:
+      #   client: pg
+      #   connection:
+      #     host: ${POSTGRES_HOST}
+      #     password: ${POSTGRES_ADMIN_PASSWORD}
+      #     port: ${POSTGRES_PORT}
+      #     user: ${POSTGRES_USER}
+      # listen:
+      #   host: 0.0.0.0
+      #   port: 7007
+      reading:
+        allow:
+        - host: '*.opentlc.com'
     integrations:
       github:
         - host: "{{ github_host }}"

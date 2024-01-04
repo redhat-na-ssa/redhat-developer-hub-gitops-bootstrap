@@ -110,6 +110,9 @@ upstream:
         baseUrl: 'https://{{ "{{" }}- include "janus-idp.hostname" . {{ "}}" }}'
       backend:
         baseUrl: 'https://{{ "{{" }}- include "janus-idp.hostname" . {{ "}}" }}'
+        reading:
+          allow:
+            - host: '*.opentlc.com'
         cors:
           origin: 'https://{{ "{{" }}- include "janus-idp.hostname" . {{ "}}" }}'
         database:
