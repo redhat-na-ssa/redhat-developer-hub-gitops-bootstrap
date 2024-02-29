@@ -35,7 +35,7 @@ commands:
           export QUAY_ORG=
           export QUAY_USER=
           export QUAY_TOKEN=
-          export RHDH_REGISTRY_PULL_SECRET=
+          #export RHDH_REGISTRY_PULL_SECRET=#not needed any more
           EOF
           cat <<EOF > ${PROJECT_SOURCE}/.ignored/private-key.pem
           PASTE THE CONTENT OF YOUR GITHUB APP PRIVATE KEY (PEM FILE) HERE

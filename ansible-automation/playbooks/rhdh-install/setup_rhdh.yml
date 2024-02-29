@@ -23,8 +23,7 @@
     (github_app_webhook_url == "") or
     (github_app_webhook_secret == "") or
     (github_org_url == "") or
-    (quay_token == "") or
-    (rhdh_quay_pull_secret == "")
+    (quay_token == "")
 
 - name: Create the idp namespace
   kubernetes.core.k8s:

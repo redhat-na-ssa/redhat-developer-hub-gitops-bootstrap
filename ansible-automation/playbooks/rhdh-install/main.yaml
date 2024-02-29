@@ -23,6 +23,7 @@
     vault_namespace: "vault"
     keycloak_host: ""
     backstage_gitops_repo: "https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git"
+    quay_registry_server_url: "{{ lookup('ansible.builtin.env', 'QUAY_SERVER_URL') }}"
 
   tasks:
     - name: Retrieve Ingress config
