@@ -79,7 +79,12 @@ This script will create the `admin` user as `cluster-admin` and 5 other regular 
 
 ## GitOps cluster bootstrap
 
- * Authenticate as a `cluster-admin` on your cluster and execute
+ 1. Open the [root-app/app-of-apps.yaml](root-app/app-of-apps.yaml) file and replace any occurency of `redhat-na-ssa` value by your own github profile name (wherever you forked this repo into). 
+
+![DevHub Workflow](./docs/images/argo-root-app-values.png)
+
+ 2. save, commit and push this change!!!
+ 3. authenticate as a `cluster-admin` on your cluster and execute
 
 ```shell
  ./bootstrap-scripts/cluster-boostrap.sh 
