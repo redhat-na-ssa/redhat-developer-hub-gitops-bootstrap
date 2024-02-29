@@ -31,7 +31,7 @@ spec:
     - RespectIgnoreDifferences=true
     - ApplyOutOfSyncOnly=true    
     retry:
-      limit: 5
+      limit: 10
       backoff:
         duration: 5s # the amount to back off. Default unit is seconds, but could also be a duration (e.g. "2m", "1h")
         factor: 2 # a factor to multiply the base duration after each failed retry

@@ -30,6 +30,7 @@ commands:
         export GITHUB_ORG_URL=https://github.com/your-org-name-here
         export GITHUB_APP_WEBHOOK_URL=https://developer-hub-rhdh.apps.your-cluster-domain-here/
         export GITHUB_APP_WEBHOOK_SECRET=rhdh-demo123
+        export QUAY_SERVER_URL=https://quay.io
         export QUAY_ORG=
         export QUAY_USER=
         export QUAY_TOKEN=

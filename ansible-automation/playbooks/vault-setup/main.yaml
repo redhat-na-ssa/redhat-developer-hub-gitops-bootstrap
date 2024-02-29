@@ -4,10 +4,9 @@
   vars:
     idp_namespace: "rhdh"
     idp_instance_name: "rhdh"
-    rhdh_helm_chart_version: "0.2.0"
     git_system: "github"
     github_application_id: "{{ lookup('ansible.builtin.env', 'GITHUB_APP_APP_ID') }}"
-    quay_registry_server_url: "https://quay.io"
+    quay_registry_server_url: "{{ lookup('ansible.builtin.env', 'QUAY_SERVER_URL') }}"
     vault_namespace: "vault"
     vault_cluster_name: "dev-cluster"
 

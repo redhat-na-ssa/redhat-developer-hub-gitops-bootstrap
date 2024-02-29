@@ -20,7 +20,6 @@
     gitlab_host: ""
     argocd_instance_name: "openshift-gitops"
     argocd_namespace: "openshift-gitops"
-    quay_registry_server_url: "https://quay.io"
     vault_namespace: "vault"
     keycloak_host: ""
     backstage_gitops_repo: "https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git"
