@@ -8,6 +8,20 @@ data:
   app-config-rhdh.yaml: |
     app:
       title : Red Hat Developer Hub
+      # branding:
+      #   fullLogo: ${BASE64_EMBEDDED_FULL_LOGO}
+      #   iconLogo: ${BASE64_EMBEDDED_ICON_LOGO}
+      #   theme:
+      #     light:
+      #       # primaryColor: ${PRIMARY_LIGHT_COLOR}
+      #       headerColor1: '#010101'
+      #       headerColor2: '#010101'
+      #       # navigationIndicatorColor: ${NAV_INDICATOR_LIGHT_COLOR}
+      #     dark:
+      #       # primaryColor: ${PRIMARY_DARK_COLOR}
+      #       headerColor1: '#010101'
+      #       headerColor2: '#010101'
+      #       # navigationIndicatorColor: ${NAV_INDICATOR_DARK_COLOR}
     backend:
       # auth:
       #   keys:
@@ -85,7 +99,18 @@ data:
                 seconds: 60
 
     proxy:
-      endpoints:  
+      endpoints:
+        # customize developer hub instance
+        #/developer-hub:
+        #  target: https://raw.githubusercontent.com/
+        #  pathRewrite:
+        #    '^/api/proxy/developer-hub/tech-radar': /redhat-na-ssa/backstage-customization-provider/main/data/tech-radar/data.json
+        #    '^/api/proxy/developer-hub': /redhat-na-ssa/backstage-customization-provider/main/data/home/data.json
+        #  changeOrigin: true
+        #  secure: true # Change to "false" in case of using self hosted cluster with a self-signed certificate
+        #  #headers:
+        #  #  <HEADER_KEY>: <HEADER_VALUE> # optional and can be passed as needed i.e Authorization can be passed for private GitHub repo and PRIVATE-TOKEN can be passed for private GitLab repo
+
         /quay/api:
           target: ${QUAY_URL}
           headers:
