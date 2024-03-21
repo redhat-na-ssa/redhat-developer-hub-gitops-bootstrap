@@ -4,13 +4,11 @@
   vars:
     idp_namespace: "rhdh"
     idp_instance_name: "rhdh"
-    rhdh_helm_chart_version: "0.2.0"
-    git_system: "github"
+    git_system: "gitlab"
     gitlab_instance_name: "gitlab"
     gitlab_root_secret_name: "{{ gitlab_instance_name }}-gitlab-initial-root-password"
     gitlab_namespace: "gitlab-system"
     gitlab_host: ""
-    quay_registry_server_url: "https://quay.io"
     vault_namespace: "vault"
     keycloak_host: ""
     backstage_gitops_repo: "https://github.com/redhat-na-ssa/redhat-developer-hub-gitops-bootstrap.git"
@@ -52,7 +50,6 @@
           apps_cluster_domain }}"
         openshift_console_host: console-openshift-console.{{
           apps_cluster_domain }}
-        quay_host: "quay.io"
 
     - name: Debug vars
       ansible.builtin.debug:

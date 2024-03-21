@@ -5,7 +5,7 @@ metadata:
   namespace: gitlab-system
 spec:
   chart:
-    version: 7.5.1
+    version: 7.9.2
     values:
       certmanager-issuer:
         email: rafaelcba@gmail.com
@@ -13,7 +13,7 @@ spec:
         install: false
       global:
         hosts:
-          domain: example.com
+          domain: example.com # update with the cluster domain here.
         ingress:
           annotations:
             route.openshift.io/termination: edge

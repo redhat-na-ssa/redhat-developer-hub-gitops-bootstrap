@@ -32,7 +32,7 @@
     pod: "{{ gitlab_toolbox_pod_name }}"
     container: "toolbox"
     command: |
-      /srv/gitlab/bin/rails runner "token = User.find_by_username('root').personal_access_tokens.create(scopes: ['api'], name: 'Automation token', expires_at: 365.days.from_now); token.set_token('{{ random_str_token }}'); token.save!"
+      /srv/gitlab/bin/rails runner "token = User.find_by_username('root').personal_access_tokens.create(scopes: ['api', 'read_api', 'read_repository', 'write_repository'], name: 'Automation token', expires_at: 365.days.from_now); token.set_token('{{ random_str_token }}'); token.save!"
   register: command_status
 
 # - name: Command result
@@ -46,56 +46,56 @@
 - name: Create vault secret for Gitlab root token
   ansible.builtin.shell: |
     oc exec vault-0 -c vault -n {{ vault_namespace
-      }} -- vault kv put -tls-skip-verify kv/secrets/janusidp/gitlab token={{
+      }} -- vault kv put -tls-skip-verify kv/secrets/{{ idp_instance_name }}/gitlab token={{
         gitlab_root_token }}
     oc exec vault-0 -c vault -n {{ vault_namespace
-      }} -- vault kv put -tls-skip-verify kv/secrets/janusidp/gitlab_webhook secret={{
+      }} -- vault kv put -tls-skip-verify kv/secrets/{{ idp_instance_name }}/gitlab_webhook secret={{
         lookup('ansible.builtin.password', '/dev/null chars=ascii_lowercase length=12') }}
 
-- name: Create a GitLab application for Keaycloack
-  ansible.builtin.uri:
-    url: https://{{ gitlab_host }}/api/v4/applications
-    method: POST
-    body_format: form-urlencoded
-    body:
-      name: keycloak
-      redirect_uri: https://{{ keycloak_host }}/auth/realms/backstage/broker/GitLab/endpoint
-      scopes: api read_user read_repository write_repository sudo openid profile email
-      confidential: false
-    headers:
-      PRIVATE-TOKEN: "{{ gitlab_root_token }}"
-    validate_certs: false
-    status_code: [201]
-  register: r_keycloak_app
-  retries: 60
-  delay: 10
-  until: r_keycloak_app.status == 201
+# - name: Create a GitLab application for Keaycloack
+#   ansible.builtin.uri:
+#     url: https://{{ gitlab_host }}/api/v4/applications
+#     method: POST
+#     body_format: form-urlencoded
+#     body:
+#       name: keycloak
+#       redirect_uri: https://{{ keycloak_host }}/auth/realms/backstage/broker/GitLab/endpoint
+#       scopes: api read_user read_repository write_repository sudo openid profile email
+#       confidential: false
+#     headers:
+#       PRIVATE-TOKEN: "{{ gitlab_root_token }}"
+#     validate_certs: false
+#     status_code: [201]
+#   register: r_keycloak_app
+#   retries: 60
+#   delay: 10
+#   until: r_keycloak_app.status == 201
 
-- name: Get Keycloak client credentials
-  ansible.builtin.set_fact:
-    keycloak_client_id: "{{ r_keycloak_app.json.application_id }}"
-    keycloak_client_secret: "{{ r_keycloak_app.json.secret }}"
+# - name: Get Keycloak client credentials
+#   ansible.builtin.set_fact:
+#     keycloak_client_id: "{{ r_keycloak_app.json.application_id }}"
+#     keycloak_client_secret: "{{ r_keycloak_app.json.secret }}"
 
-- name: Create Devspaces GitLab application
-  ansible.builtin.uri:
-    url: https://{{ gitlab_host }}/api/v4/applications
-    method: POST
-    body_format: form-urlencoded
-    body:
-      name: devspaces
-      redirect_uri: https://{{ devspaces_host }}/api/oauth/callback
-      scopes: api read_user read_repository write_repository sudo openid profile email
-      confidential: false
-    headers:
-      PRIVATE-TOKEN: "{{ gitlab_root_token }}"
-    validate_certs: false
-    status_code: [201]
-  register: r_devspaces_app
-  retries: 60
-  delay: 10
-  until: r_devspaces_app.status == 201
+# - name: Create Devspaces GitLab application
+#   ansible.builtin.uri:
+#     url: https://{{ gitlab_host }}/api/v4/applications
+#     method: POST
+#     body_format: form-urlencoded
+#     body:
+#       name: devspaces
+#       redirect_uri: https://{{ devspaces_host }}/api/oauth/callback
+#       scopes: api read_user read_repository write_repository sudo openid profile email
+#       confidential: false
+#     headers:
+#       PRIVATE-TOKEN: "{{ gitlab_root_token }}"
+#     validate_certs: false
+#     status_code: [201]
+#   register: r_devspaces_app
+#   retries: 60
+#   delay: 10
+#   until: r_devspaces_app.status == 201
 
-- name: Get Keycloak client credentials
-  ansible.builtin.set_fact:
-    devspaces_client_id: "{{ r_devspaces_app.json.application_id }}"
-    devspaces_client_secret: "{{ r_devspaces_app.json.secret }}"
+# - name: Get Keycloak client credentials
+#   ansible.builtin.set_fact:
+#     devspaces_client_id: "{{ r_devspaces_app.json.application_id }}"
+#     devspaces_client_secret: "{{ r_devspaces_app.json.secret }}"

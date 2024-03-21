@@ -68,7 +68,10 @@ data:
               webhookSecret: ${GITHUB_APP_WEBHOOK_SECRET}
               privateKey: |
                 ${GITHUB_APP_PRIVATE_KEY}
-
+      # gitlab:
+      #   - host: gitlab.apps.cluster.domain
+      #     apiBaseUrl: https://gitlab.apps.cluster.domain/api/v4
+      #     token: 'gitlab-token' # a token with ['api', 'read_api'] scopes
     auth:
       environment: development
       providers:
@@ -80,13 +83,22 @@ data:
             #-----
             clientId: ${GITHUB_APP_CLIENT_ID}
             clientSecret: ${GITHUB_APP_CLIENT_SECRET}
-
+        # gitlab:
+        #   development:
+        #     clientId: 'cliendId'
+        #     clientSecret: 'clientSecret'
+        #     ## uncomment if using self-hosted GitLab
+        #     audience: https://gitlab.apps.cluster.domain
+        #     ## uncomment if using a custom redirect URI
+        #     # callbackUrl: https://${RHDH_BASE_URL}/api/auth/gitlab/handler/frame
+    signInPage: github # gitlab
     catalog:
       providers:
         githubOrg:
-          default:
-            id: development
-            orgUrl: ${GITHUB_ORG_URL}
+          id: development
+          githubUrl: "${GITHUB_URL}"
+        orgs:
+          - "${GITHUB_ORG}"
         github:
           providerId:
             organization: "${GITHUB_ORG}"
@@ -97,6 +109,21 @@ data:
                 minutes: 2
               initialDelay:
                 seconds: 60
+        # gitlab:
+        #   gitlab:
+        #     host: gitlab.apps.cluster.domain
+        #     orgEnabled: true
+        #     #group: 'demo' # Required for gitlab.com when `orgEnabled: true`. Optional for self managed. Must not end with slash. Accepts only groups under the provided path (which will be stripped)
+        #     #groupPattern: '[\s\S]*' # Optional. Filters found groups based on provided pattern. Defaults to `[\s\S]*`, which means to not filter anything
+        #     #rules:
+        #     #  - allow: [Group, User]
+        #     schedule:
+        #       frequency:
+        #         minutes: 10
+        #       timeout: 
+        #         minutes: 2
+        #       initialDelay:
+        #         seconds: 60
 
     proxy:
       endpoints:
