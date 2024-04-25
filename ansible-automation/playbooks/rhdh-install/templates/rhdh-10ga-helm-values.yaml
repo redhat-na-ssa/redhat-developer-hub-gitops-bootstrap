@@ -145,6 +145,8 @@ upstream:
           secretKeyRef:
             key: backend-secret
             name: '{{ "{{" }} include "janus-idp.backend-secret-name" $ {{ "}}" }}'
+      - name: NODE_TLS_REJECT_UNAUTHORIZED
+        value: '0' # when using self-signed certificates
     extraAppConfig:
       - configMapRef: app-config-rhdh
         filename: app-config-rhdh.yaml
@@ -166,6 +168,38 @@ upstream:
           defaultMode: 420
           optional: true
           secretName: dynamic-plugins-npmrc
+
+    # When integrating with Keycloak via oidc-proxy
+    # https://janus-idp.io/blog/2023/01/17/enabling-keycloak-authentication-in-backstage/
+    #   extraContainers:
+    #     - name: oauth2-proxy
+    #       env:
+    #         - name: OAUTH2_PROXY_CLIENT_ID
+    #           value: '{{ KEYCLOAK_CLIENTID }}'
+    #         - name: OAUTH2_PROXY_CLIENT_SECRET
+    #           value: '{{ KEYCLOAK_CLIENTSECRET }}'
+    #         - name: OAUTH2_PROXY_COOKIE_SECRET
+    #           value: '{{ KEYCLOAK_COOKIESECRET }}'
+    #         - name: OAUTH2_PROXY_OIDC_ISSUER_URL
+    #           value: '{{ KEYCLOAK_ISSUERURL }}'
+    #         - name: OAUTH2_PROXY_SSL_INSECURE_SKIP_VERIFY
+    #           value: 'true'
+    #       ports:
+    #         - name: oauth2-proxy
+    #           containerPort: 4180
+    #           protocol: TCP
+    #       imagePullPolicy: IfNotPresent
+    #       image: 'quay.io/oauth2-proxy/oauth2-proxy:latest'
+    #       args:
+    #         - '--provider=oidc'
+    #         - '--email-domain=*'
+    #         - '--upstream=http://localhost:7007'
+    #         - '--http-address=0.0.0.0:4180'
+    #         - '--skip-provider-button'
+    # service:
+    #   ports:
+    #     backend: 4180
+    #     targetPort: oauth2-proxy
 
     initContainers:
       - command:
