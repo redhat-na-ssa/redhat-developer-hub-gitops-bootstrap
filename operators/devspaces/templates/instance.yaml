@@ -19,9 +19,9 @@ spec:
     maxNumberOfRunningWorkspacesPerUser: 5
     storage:
       pvcStrategy: per-workspace
-      perWorkspaceStrategyPvcConfig:
-        claimSize: 10Gi
-        storageClass: 'gp3-csi'
+      # perWorkspaceStrategyPvcConfig:
+      #   claimSize: 10Gi
+      #   storageClass: 'gp3-csi'
   components:
     pluginRegistry:
       openVSXURL: 'https://open-vsx.org'

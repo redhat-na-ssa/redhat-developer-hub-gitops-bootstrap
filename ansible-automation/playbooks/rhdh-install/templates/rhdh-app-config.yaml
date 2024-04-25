@@ -23,6 +23,7 @@ data:
       #       headerColor2: '#010101'
       #       # navigationIndicatorColor: ${NAV_INDICATOR_DARK_COLOR}
     backend:
+      # This is used for service to service auth. It is used to verify that requests between plugins are legitimate.
       # auth:
       #   keys:
       #   - secret: ${BACKEND_SECRET}
@@ -73,6 +74,9 @@ data:
       #     apiBaseUrl: https://gitlab.apps.cluster.domain/api/v4
       #     token: 'gitlab-token' # a token with ['api', 'read_api'] scopes
     auth:
+      # The session secret is for a session store and is a requirement for some of the auth providers (eg. OIDC).
+      session:
+        secret: ${SESSION_SECRET} # It can be a string like mySuperSecret
       environment: development
       providers:
         github:
@@ -94,6 +98,17 @@ data:
     signInPage: github # gitlab
     catalog:
       providers:
+        # oidc:
+        #   development:
+        #     metadataUrl: ${AUTH_OIDC_METADATA_URL}
+        #     clientId: ${AUTH_OIDC_CLIENT_ID}
+        #     clientSecret: ${AUTH_OIDC_CLIENT_SECRET}
+        #     prompt: ${AUTH_OIDC_PROMPT} # recommended to use auto
+        #     ## uncomment for additional configuration options
+        #     # callbackUrl: ${AUTH_OIDC_CALLBACK_URL}
+        #     # tokenEndpointAuthMethod: ${AUTH_OIDC_TOKEN_ENDPOINT_METHOD}
+        #     # tokenSignedResponseAlg: ${AUTH_OIDC_SIGNED_RESPONSE_ALG}
+        #     # scope: ${AUTH_OIDC_SCOPE}
         githubOrg:
           id: development
           githubUrl: "${GITHUB_URL}"
