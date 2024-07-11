@@ -125,7 +125,9 @@ upstream:
     args:
       - '--config'
       - dynamic-plugins-root/app-config.dynamic-plugins.yaml
-    command: []
+    containerPorts:
+      backend: 7007
+    # command: []
     image:
       #pullSecrets:
       #  - rhdh-pull-secret
@@ -203,8 +205,8 @@ upstream:
 
     initContainers:
       - command:
-          - python
-          - install-dynamic-plugins.py
+          # - python
+          - install-dynamic-plugins.sh #.py
           - /dynamic-plugins-root
         env:
           - name: NPM_CONFIG_USERCONFIG
@@ -249,14 +251,28 @@ upstream:
       periodSeconds: 10
       successThreshold: 2
       timeoutSeconds: 2
-
+    replicas: 1
+    revisionHistoryLimit: 10
+  clusterDomain: cluster.local
+  diagnosticMode:
+    args:
+      - infinity
+    command:
+      - sleep
+    enabled: false
   ingress:
     enabled: false
     host: '{{ "{{" }} .Values.global.host {{ "}}" }}'
     tls:
       enabled: false
+  metrics:
+    serviceMonitor:
+      enabled: false
+      path: /metrics
   nameOverride: developer-hub
   networkPolicy:
+    egressRules:
+      denyConnectionsToExternal: false
     enabled: false
   postgresql:
     auth:
