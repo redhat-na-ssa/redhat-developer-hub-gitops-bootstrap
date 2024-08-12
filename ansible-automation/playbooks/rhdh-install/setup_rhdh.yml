@@ -30,11 +30,6 @@
     state: present
     definition: "{{ lookup('template', 'rhdh-namespace.yaml') | from_yaml }}"
 
-- name: Create the rhdh pull secret # required before GA
-  kubernetes.core.k8s:
-    state: present
-    definition: "{{ lookup('template', 'rhdh-pull-secret.yaml') | from_yaml }}"
-
 - name: Create a secret for the Github plugin
   kubernetes.core.k8s:
     state: present
