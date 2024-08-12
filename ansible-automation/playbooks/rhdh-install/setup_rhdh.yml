@@ -103,16 +103,25 @@
 #     plugin_path: "https://github.com/databus23/helm-diff"
 #     state: present
 
-- name: Add Openshift chart repo
-  kubernetes.core.helm_repository:
-    name: openshift-helm-charts
-    repo_url: "https://charts.openshift.io"
+# - name: Add Openshift chart repo
+#   kubernetes.core.helm_repository:
+#     name: openshift-helm-charts
+#     repo_url: "https://charts.openshift.io"
+#     state: present
+#   register: helm_repo_result
+#   ignore_errors: true
+
+# - name: Display warning if repository already exists
+#   debug:
+#     msg: "Helm repository '{{ your_repo_name }}' already exists. Skipping addition."
+#   when: helm_repo_result|failed
 
 - name: Render RHDH Helmchart values template 
   ansible.builtin.template: src="templates/{{ rhdh_helm_values_file }}" dest="/tmp/{{ rhdh_helm_values_file }}"
 
 - name: Deploy RHDH Helm Chart with values loaded from template
   ansible.builtin.shell: |
+    helm repo add openshift https://charts.openshift.io
     helm repo update
     helm upgrade -i developer-hub \
       -f "/tmp/{{ rhdh_helm_values_file }}" \
